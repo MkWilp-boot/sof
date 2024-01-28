@@ -1,5 +1,5 @@
-#ifndef CORTH_FILE_H
-#define CORTH_FILE_H
+#ifndef SOF_FILE_H
+#define SOF_FILE_H
 
 #include <stddef.h>
 #include <stdint.h>
@@ -26,4 +26,4 @@ struct lexer_file_identifiers {
     size_t size;
 };
 
-#endif  // CORTH_FILE_H
+#endif  // SOF_FILE_H

@@ -46,7 +46,7 @@ static struct lexer_identifier_allocation_result create_identifier(struct lexer_
 /*################################################################################*/
 
 struct lexer_file lexer_read(char* file_name) {
-    FILE* source_file = fopen("main.corth", "r");
+    FILE* source_file = fopen(file_name, "r");
 
     if(NULL == source_file) {
         fclose(source_file);

@@ -1,14 +1,14 @@
-#ifndef CORTH_LEXER_H
-#define CORTH_LEXER_H
+#ifndef SOF_LEXER_H
+#define SOF_LEXER_H
 
 #include "../pkg/error_codes.h"
 
 /*
  * Function: lexer_reade
  * ----------------------------
- * Readers a source corth file
+ * Readers a source sof file
  *
- * file_name: full path of a corth source file.
+ * file_name: full path of a sof source file.
  *
  * returns: lexer_file struct.
  */
@@ -19,7 +19,7 @@ struct lexer_file lexer_read(char* file_name);
  * ----------------------------
  * creates an array of identifiers based on a lexer_file
  *
- * file: corth lexer containing information about the source file
+ * file: sof lexer containing information about the source file
  *
  * returns: lexer_file_identifiers struct.
  * 
@@ -37,4 +37,4 @@ struct lexer_file_identifiers lexer_build_identifiers(struct lexer_file file);
  * returns: void.
  */
 void lexer_free_identifiers(struct lexer_file_identifiers identifiers);
-#endif // CORTH_LEXER_H
+#endif // SOF_LEXER_H
