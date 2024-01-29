@@ -9,18 +9,6 @@
 #include "parser/parser.h"
 #include "parser/structs.h"
 
-int main2() {
-    char* converted_str;
-    char* str = "10";
-    long result = strtol(str, &converted_str, 10);
-
-    printf("%ld | %d\n", result, *converted_str);
-
-    printf("converted_str == str: %d\n", converted_str == str);
-
-    return 0;
-}
-
 int main() {
     struct lexer_file file = lexer_read("main.sof");
     if(0 != file.error_code) {
