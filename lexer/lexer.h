@@ -3,38 +3,31 @@
 
 #include "../pkg/error_codes.h"
 
-/*
- * Function: lexer_reade
- * ----------------------------
- * Readers a source sof file
+/**
+ * @brief Readers a source SOF file.
  *
- * file_name: full path of a sof source file.
- *
- * returns: lexer_file struct.
+ * @param file_name full path of a sof source file.
+ * @return lexer_file struct
  */
 struct lexer_file lexer_read(char* file_name);
 
-/*
- * Function: lexer_build_identifiers
- * ----------------------------
- * creates an array of identifiers based on a lexer_file
+/**
+ * @brief creates an array of identifiers based on a lexer_file.
  *
- * file: sof lexer containing information about the source file
- *
- * returns: lexer_file_identifiers struct.
+ * @attention This function frees the parameter "file.content"
  * 
- * IMPORTANT: this function frees "file.content"
+ * @param file SOF lexer containing information about the source file.
+ * @return lexer_file_identifiers struct
  */
 struct lexer_file_identifiers lexer_build_identifiers(struct lexer_file file);
 
-/*
- * Function: lexer_free_identifiers
- * ----------------------------
- * frees all identifiers within a lexer_file_identifiers range
+/**
+ * @brief frees all identifiers within a lexer_file_identifiers range.
  *
- * identifiers: lexer identifiers to be freed.
- *
- * returns: void.
+ * @attention This function frees the parameter "file.content"
+ * 
+ * @param identifiers lexer identifiers to be freed.
  */
-void lexer_free_identifiers(struct lexer_file_identifiers identifiers);
+void lexer_free_identifiers(struct lexer_file_identifiers* identifiers);
+
 #endif // SOF_LEXER_H

@@ -1,5 +1,5 @@
-#ifndef SOF_FILE_H
-#define SOF_FILE_H
+#ifndef SOF_LEXER_STRUCTS_H
+#define SOF_LEXER_STRUCTS_H
 
 #include <stddef.h>
 #include <stdint.h>
@@ -26,4 +26,4 @@ struct lexer_file_identifiers {
     size_t size;
 };
 
-#endif  // SOF_FILE_H
+#endif  // SOF_LEXER_STRUCTS_H

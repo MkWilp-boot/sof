@@ -2,8 +2,24 @@
 #include <stdlib.h>
 
 #include "pkg/error_codes.h"
+
 #include "lexer/lexer.h"
 #include "lexer/structs.h"
+
+#include "parser/parser.h"
+#include "parser/structs.h"
+
+int main2() {
+    char* converted_str;
+    char* str = "10";
+    long result = strtol(str, &converted_str, 10);
+
+    printf("%ld | %d\n", result, *converted_str);
+
+    printf("converted_str == str: %d\n", converted_str == str);
+
+    return 0;
+}
 
 int main() {
     struct lexer_file file = lexer_read("main.sof");
@@ -14,12 +30,8 @@ int main() {
     if(0 != file_identifiers.error_code) {
         return file_identifiers.error_code;
     }
-    
-    for(size_t i = 0; i < file_identifiers.size; ++i) {
-        printf("'%s'\n", file_identifiers.identifiers[i]);
-    }
 
-    // cleanup
-    lexer_free_identifiers(file_identifiers);
+    parser_tokenize(&file_identifiers);
+    
     return 0;
 }

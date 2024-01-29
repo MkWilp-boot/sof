@@ -15,10 +15,6 @@ struct lexer_identifier_allocation_result {
     uint8_t error_code;
 };
 
-/*################################################################################*/
-/*#############               PRIVATE FUNCTIONS               ####################*/
-/*################################################################################*/
-
 static struct lexer_identifier_allocation_result create_identifier(struct lexer_file file, uint32_t end, uint32_t begin) {
     /*Must correct "i"nth indexing to skip/avoid spaces*/
     size_t identifer_size = ((end - 1) - begin) + 1 /*NULL terminator*/; 
@@ -40,10 +36,6 @@ static struct lexer_identifier_allocation_result create_identifier(struct lexer_
     };
     return l_file;
 }
-
-/*################################################################################*/
-/*#############                PUBLIC FUNCTIONS               ####################*/
-/*################################################################################*/
 
 struct lexer_file lexer_read(char* file_name) {
     FILE* source_file = fopen(file_name, "r");
@@ -164,15 +156,19 @@ struct lexer_file_identifiers lexer_build_identifiers(struct lexer_file file) {
     return l_file;
 }
 
-void lexer_free_identifiers(struct lexer_file_identifiers identifiers) {
-    for(size_t i = 0; i < identifiers.size; ++i) {
-        if(NULL != identifiers.identifiers[i]) {
-            free(identifiers.identifiers[i]);
-            identifiers.identifiers[i] = NULL;
+void inline lexer_free_identifiers(struct lexer_file_identifiers* identifiers) {
+    if(NULL == identifiers) {
+        return;
+    }
+    for(size_t i = 0; i < identifiers->size; ++i) {
+        if(NULL != identifiers->identifiers[i]) {
+            free(identifiers->identifiers[i]);
+            identifiers->identifiers[i] = NULL;
         }
     }
-    if(NULL != identifiers.identifiers) {
-        free(identifiers.identifiers);
-        identifiers.identifiers = NULL;
+    if(NULL != identifiers->identifiers) {
+        free(identifiers->identifiers);
+        identifiers->identifiers = NULL;
     }
+    identifiers = NULL;
 }

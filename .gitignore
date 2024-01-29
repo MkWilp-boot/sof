@@ -1,6 +1,6 @@
 objects/*
 *.o
 main
-main.sof
+*.sof
 .vscode/*
 .DS_DATA
