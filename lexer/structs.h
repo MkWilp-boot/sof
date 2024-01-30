@@ -12,7 +12,7 @@
 struct lexer_file {
     size_t bytes_sz;
     uint8_t error_code;
-    char* content;
+    char *content;
 };
 
 /*
@@ -21,7 +21,7 @@ struct lexer_file {
  * Holds all identifiers of a file, it's amount and a possible error
  */
 struct lexer_file_identifiers {
-    char** identifiers;
+    char **identifiers;
     uint8_t error_code;
     size_t size;
 };

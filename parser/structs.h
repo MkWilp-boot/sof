@@ -43,7 +43,7 @@ struct parser_token {
     enum parser_operation_type type;
 
     union parser_data data;
-    union parser_data* params;
+    union parser_data *params;
 };
 
 #endif // SOF_PARSER_STRUCTS_H

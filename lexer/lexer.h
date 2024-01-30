@@ -9,7 +9,7 @@
  * @param file_name full path of a sof source file.
  * @return lexer_file struct
  */
-struct lexer_file lexer_read(char* file_name);
+struct lexer_file lexer_read(char *file_name);
 
 /**
  * @brief creates an array of identifiers based on a lexer_file.
@@ -28,6 +28,6 @@ struct lexer_file_identifiers lexer_build_identifiers(struct lexer_file file);
  * 
  * @param identifiers lexer identifiers to be freed.
  */
-void lexer_free_identifiers(struct lexer_file_identifiers* identifiers);
+void lexer_free_identifiers(struct lexer_file_identifiers *identifiers);
 
 #endif // SOF_LEXER_H

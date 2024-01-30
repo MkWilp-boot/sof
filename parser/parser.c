@@ -20,7 +20,7 @@
  * 
  * @return parsed identifier.
  */
-static struct parser_token construct_number(const char* identifier, const char unary_operator) {
+static struct parser_token construct_number(const char *identifier, const char unary_operator) {
     struct parser_token token = {0};
     union parser_data token_data = {0};
 
@@ -39,15 +39,12 @@ static struct parser_token construct_number(const char* identifier, const char u
         exit(ERR_UNKNOW);
     }
 
-    printf("%ld\n", token_data.i64_value);
-    printf("%ld\n", token_data.u64_value);
-
     token.data = token_data;
     return token;
 }
 
 /**
- * @brief Constructs a struct parser_token operator from a char* identifier.
+ * @brief Constructs a struct parser_token operator from a char *identifier.
  *
  * @param identifier full identifier to be processed.
  * 
@@ -55,7 +52,7 @@ static struct parser_token construct_number(const char* identifier, const char u
  * 
  * @return parsed identifier.
  */
-static struct parser_token construct_operator(const char* identifier) {
+static struct parser_token construct_operator(const char *identifier) {
     struct parser_token token = {0};
     switch (identifier[0]) {
     case '-':
@@ -77,11 +74,11 @@ static struct parser_token construct_operator(const char* identifier) {
     return token;
 }
 
-struct parser_token *parser_tokenize(struct lexer_file_identifiers* file_identifiers) {
+struct parser_token *parser_tokenize(struct lexer_file_identifiers *file_identifiers) {
     struct parser_token *generated_tokens = (struct parser_token*)calloc(file_identifiers->size, sizeof(struct parser_token));
 
     for(size_t i = 0; i < file_identifiers->size; ++i) {
-        const char* identifier = file_identifiers->identifiers[i];
+        const char *identifier = file_identifiers->identifiers[i];
 
         // unaries
         if(('-' == identifier[0] || '+' == identifier[0]) && '\0' != identifier[1]) {
