@@ -1,6 +1,7 @@
 objects/*
 *.o
 main
+*.exe
 *.sof
 .vscode/*
 .DS_DATA

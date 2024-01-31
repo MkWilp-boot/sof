@@ -18,7 +18,7 @@ struct lexer_identifier_allocation_result {
 static struct lexer_identifier_allocation_result create_identifier(struct lexer_file file, uint32_t end, uint32_t begin) {
     /*Must correct "i"nth indexing to skip/avoid spaces*/
     size_t identifer_size = ((end - 1) - begin) + 1 /*NULL terminator*/; 
-    char *identifier = (char*)malloc((identifer_size + 1) * sizeof(char));
+    char *const identifier = malloc((identifer_size + 1) * sizeof(char));
 
     if(NULL == identifier) {
         struct lexer_identifier_allocation_result l_file = { 
@@ -37,7 +37,7 @@ static struct lexer_identifier_allocation_result create_identifier(struct lexer_
     return l_file;
 }
 
-struct lexer_file lexer_read(char *file_name) {
+struct lexer_file lexer_read(const char *const file_name) {
     FILE *source_file = fopen(file_name, "r");
 
     if(NULL == source_file) {
@@ -63,7 +63,7 @@ struct lexer_file lexer_read(char *file_name) {
 
     fseek(source_file, 0, SEEK_SET);
 
-    char *source_content = (char*)malloc(file_bytes_amount);
+    char *const source_content = malloc(file_bytes_amount);
     size_t file_bytes_read = fread(source_content, 1, file_bytes_amount, source_file);
     fclose(source_file);
 
@@ -97,7 +97,7 @@ struct lexer_file_identifiers lexer_build_identifiers(struct lexer_file file) {
     }
     identifiers_size++;
 
-    char **identifiers = (char**)calloc(identifiers_size, sizeof(char*));
+    char **const identifiers = calloc(identifiers_size, sizeof(char*));
     if(NULL == identifiers) {
         struct lexer_file_identifiers l_file = { 
             .size = 0,

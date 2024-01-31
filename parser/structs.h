@@ -38,12 +38,12 @@ union parser_data {
 /**
  * @brief Holds all data that identifies a valid SOF instruction token.
  */
-struct parser_token {
+typedef struct parser_token {
     enum parser_operation operation;
     enum parser_operation_type type;
 
     union parser_data data;
     union parser_data *params;
-};
+} parser_token_t;
 
 #endif // SOF_PARSER_STRUCTS_H

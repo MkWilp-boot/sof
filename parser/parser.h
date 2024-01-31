@@ -12,6 +12,6 @@
  * @param file_identifiers File processed by the lexer.
  * @return array of parser_token.
  */
-struct parser_token *parser_tokenize(struct lexer_file_identifiers *file_identifiers);
+parser_token_t *parser_tokenize(struct lexer_file_identifiers *array_file_identifiers);
 
 #endif // SOF_PARSER_H

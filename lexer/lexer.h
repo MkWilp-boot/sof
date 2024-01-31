@@ -9,7 +9,7 @@
  * @param file_name full path of a sof source file.
  * @return lexer_file struct
  */
-struct lexer_file lexer_read(char *file_name);
+struct lexer_file lexer_read(const char *const file_name);
 
 /**
  * @brief creates an array of identifiers based on a lexer_file.

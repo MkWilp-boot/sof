@@ -20,8 +20,8 @@
  * 
  * @return parsed identifier.
  */
-static struct parser_token construct_number(const char *identifier, const char unary_operator) {
-    struct parser_token token = {0};
+static parser_token_t construct_number(const char *identifier, const char unary_operator) {
+    parser_token_t token = {0};
     union parser_data token_data = {0};
 
     token.params = NULL;
@@ -52,17 +52,17 @@ static struct parser_token construct_number(const char *identifier, const char u
  * 
  * @return parsed identifier.
  */
-static struct parser_token construct_operator(const char *identifier) {
-    struct parser_token token = {0};
+static parser_token_t construct_operator(const char *identifier) {
+    parser_token_t token = {0};
     switch (identifier[0]) {
     case '-':
-        token = (struct parser_token) {
+        token = (parser_token_t) {
             .type = PARSER_INT64,
             .operation = PARSER_SUB
         };
         break;
     case '+':
-        token = (struct parser_token) {
+        token = (parser_token_t) {
             .type = PARSER_INT64,
             .operation = PARSER_SUM
         };
@@ -74,31 +74,31 @@ static struct parser_token construct_operator(const char *identifier) {
     return token;
 }
 
-struct parser_token *parser_tokenize(struct lexer_file_identifiers *file_identifiers) {
-    struct parser_token *generated_tokens = (struct parser_token*)calloc(file_identifiers->size, sizeof(struct parser_token));
+parser_token_t *parser_tokenize(struct lexer_file_identifiers *array_file_identifiers) {
+    parser_token_t *generated_tokens = calloc(array_file_identifiers->size, sizeof(parser_token_t));
 
-    for(size_t i = 0; i < file_identifiers->size; ++i) {
-        const char *identifier = file_identifiers->identifiers[i];
+    for(size_t i = 0; i < array_file_identifiers->size; ++i) {
+        const char *identifier = array_file_identifiers->identifiers[i];
 
         // unaries
         if(('-' == identifier[0] || '+' == identifier[0]) && '\0' != identifier[1]) {
             // identifier[0] is the sign of the identifier.
-            struct parser_token token = construct_number(identifier, identifier[0]);
+            parser_token_t token = construct_number(identifier, identifier[0]);
             generated_tokens[i] = token;
         }
         // single operators
         else if(('-' == identifier[0] || '+' == identifier[0]) && '\0' == identifier[1]) {
-            struct parser_token token = construct_operator(identifier);
+            parser_token_t token = construct_operator(identifier);
             generated_tokens[i] = token;
         }
         else {
             // always generates a positive numbers.
-            struct parser_token token = construct_number(identifier, '+');
+            parser_token_t token = construct_number(identifier, '+');
             generated_tokens[i] = token;
         }
     }
 
     // frees file_identfiers
-    lexer_free_identifiers(file_identifiers);
+    lexer_free_identifiers(array_file_identifiers);
     return NULL;
 }
