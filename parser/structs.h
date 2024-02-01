@@ -46,4 +46,9 @@ typedef struct parser_token {
     union parser_data *params;
 } parser_token_t;
 
+struct parser_array_token {
+    size_t size;
+    parser_token_t* array;
+};
+
 #endif // SOF_PARSER_STRUCTS_H

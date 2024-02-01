@@ -8,6 +8,7 @@
 
 #include "parser/parser.h"
 #include "parser/structs.h"
+#include "parser/compiler/sof_compiler.h"
 
 int main() {
     struct lexer_file file = lexer_read("main.sof");
@@ -19,7 +20,8 @@ int main() {
         return file_identifiers.error_code;
     }
 
-    parser_tokenize(&file_identifiers);
+    struct parser_array_token parser_tokens = parser_tokenize(&file_identifiers);
     
+    compile(parser_tokens);
     return 0;
 }

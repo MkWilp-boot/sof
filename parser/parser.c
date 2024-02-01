@@ -74,7 +74,7 @@ static parser_token_t construct_operator(const char *identifier) {
     return token;
 }
 
-parser_token_t *parser_tokenize(struct lexer_file_identifiers *array_file_identifiers) {
+struct parser_array_token parser_tokenize(struct lexer_file_identifiers *array_file_identifiers) {
     parser_token_t *generated_tokens = calloc(array_file_identifiers->size, sizeof(parser_token_t));
 
     for(size_t i = 0; i < array_file_identifiers->size; ++i) {
@@ -100,5 +100,10 @@ parser_token_t *parser_tokenize(struct lexer_file_identifiers *array_file_identi
 
     // frees file_identfiers
     lexer_free_identifiers(array_file_identifiers);
-    return NULL;
+
+    struct parser_array_token parser_tokens = {
+        .array = generated_tokens,
+        .size = array_file_identifiers->size
+    };
+    return parser_tokens;
 }

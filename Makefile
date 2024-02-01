@@ -1,13 +1,19 @@
-CFLAGS := -Wall -std=c11 -pedantic
+CC := gcc
+C_VERSION := -std=c11
+C_FLAGS := $(C_VERSION) -Wall -pedantic
+RELEASE_FLAGS := -O2
 
-main: objects.o
-	cc objects/main.o objects/lexer.o objects/parser.o -o main $(CFLAGS)
+.PHONY: clean
+
+sof: objects.o
+	$(CC) objects/sof.o objects/lexer.o objects/parser.o objects/sof_compiler.o -o sof $(C_FLAGS)
 
 objects.o:
-	cc -c lexer/lexer.c -o objects/lexer.o $(CFLAGS)
-	cc -c parser/parser.c -o objects/parser.o $(CFLAGS)
-	cc -c main.c -o objects/main.o $(CFLAGS) -g
+	$(CC) -c lexer/lexer.c -o objects/lexer.o $(C_FLAGS)
+	$(CC) -c parser/parser.c -o objects/parser.o $(C_FLAGS)
+	$(CC) -c parser/compiler/sof_compiler.c -o objects/sof_compiler.o $(C_FLAGS)
+	$(CC) -c main.c -o objects/sof.o $(C_FLAGS) -g
 
 clean:
-	rm -f main
+	rm -f sof
 	find objects/* -delete
