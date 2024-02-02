@@ -1,6 +1,8 @@
 objects/*
+bin/*
+asm/*
+*.run
 *.o
-main
 *.exe
 *.sof
 .vscode/*

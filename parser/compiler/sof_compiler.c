@@ -4,11 +4,14 @@
 #include <assert.h>
 
 #include "sof_compiler.h"
+
 #include "../structs.h"
 
 #if defined(linux) || defined(__unix) || defined(__unix__) || defined(unix)
+
+#include "linux/linux.h"
 void compile(struct parser_array_token parser_tokens) {
-    assert(0 && "linux not implemented");
+    compile_linux(parser_tokens);
 }
 
 #elif defined(_WIN64)
