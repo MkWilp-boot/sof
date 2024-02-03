@@ -2,24 +2,35 @@ CC := gcc
 C_version := -std=c11
 C_flags := $(C_version) -Wall -pedantic
 
-.PHONY: clean-linux
-.PHONY: clean-windows
-.PHONY: sof
+WIN_CUR_DIR := $(subst /,\,$(dir $(realpath $(lastword $(MAKEFILE_LIST)))))
 
-sof: objects.o
-	$(CC) objects/sof.o objects/lexer.o objects/parser.o objects/sof_compiler.o objects/linux.o objects/win64.o -o sof $(C_flags)
+.PHONY: clean-l
+.PHONY: clean-w
 
-objects.o:
+win64: common_objs.o
+	$(CC) -D W64 -c parser/compiler/sof_compiler.c -o objects/sof_compiler.o $(C_flags)
+	$(CC) -c parser/compiler/windows/win64/win64.c -o objects/win64.o $(C_flags)
+	$(CC) objects/sof.o objects/lexer.o objects/parser.o objects/sof_compiler.o objects/win64.o -o sof $(C_flags)
+
+linux: common_objs.o
+	$(CC) -D L64 -c parser/compiler/sof_compiler.c -o objects/sof_compiler.o $(C_flags)
+	$(CC) -c parser/compiler/linux/linux.c -o objects/linux.o $(C_flags)
+	$(CC) objects/sof.o objects/lexer.o objects/parser.o objects/sof_compiler.o objects/linux.o -o sof $(C_flags)
+
+common_objs.o:
 	$(CC) -c lexer/lexer.c -o objects/lexer.o $(C_flags)
 	$(CC) -c parser/parser.c -o objects/parser.o $(C_flags)
-	$(CC) -c parser/compiler/sof_compiler.c -o objects/sof_compiler.o $(C_flags)
-	$(CC) -c parser/compiler/linux/linux.c -o objects/linux.o $(C_flags)
-	$(CC) -c parser/compiler/windows/win64/win64.c -o objects/win64.o $(C_flags)
 	$(CC) -c main.c -o objects/sof.o $(C_flags) -g
 
-clean-windows:
+clean-win:
+	rmdir /s /q $(WIN_CUR_DIR)objects;
+	rmdir /s /q $(WIN_CUR_DIR)bin;
+	rmdir /s /q $(WIN_CUR_DIR)asm;
+	mkdir $(WIN_CUR_DIR)objects;
+	mkdir $(WIN_CUR_DIR)bin;
+	mkdir $(WIN_CUR_DIR)asm;
 
-clean-linux:
+clean-lin:
 	rm -f sof
 	find objects/* -delete
 	find asm/* -delete
