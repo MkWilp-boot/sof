@@ -15,8 +15,10 @@ void compile(struct parser_array_token parser_tokens) {
 }
 
 #elif defined(_WIN64)
+
+#include "windows/win64/win64.h"
 void compile(struct parser_array_token parser_tokens) {
-    assert(0 && "win64 not implemented");
+    compile_win64(parser_tokens);
 }
 
 #elif defined(_WIN32)
