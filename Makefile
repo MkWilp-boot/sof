@@ -4,8 +4,8 @@ C_flags := $(C_version) -Wall -pedantic
 
 WIN_CUR_DIR := $(subst /,\,$(dir $(realpath $(lastword $(MAKEFILE_LIST)))))
 
-.PHONY: clean-l
-.PHONY: clean-w
+.PHONY: clean-linux
+.PHONY: clean-win
 
 win64: common_objs.o
 	$(CC) -D W64 -c parser/compiler/sof_compiler.c -o objects/sof_compiler.o $(C_flags)
@@ -30,7 +30,7 @@ clean-win:
 	mkdir $(WIN_CUR_DIR)bin;
 	mkdir $(WIN_CUR_DIR)asm;
 
-clean-lin:
+clean-linux:
 	rm -f sof
 	find objects/* -delete
 	find asm/* -delete
