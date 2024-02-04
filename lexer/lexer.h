@@ -4,9 +4,9 @@
 #include "../pkg/error_codes.h"
 
 /**
- * @brief Readers a source SOF file.
+ * @brief Reads a source SOF file.
  *
- * @param file_name full path of a sof source file.
+ * @param file_name full path of a SOF source file.
  * @return lexer_file struct
  */
 struct lexer_file lexer_read(const char *const file_name);

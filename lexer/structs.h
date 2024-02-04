@@ -1,7 +1,6 @@
 #ifndef SOF_LEXER_STRUCTS_H
 #define SOF_LEXER_STRUCTS_H
 
-#include <stddef.h>
 #include <stdint.h>
 
 /*
@@ -18,7 +17,7 @@ struct lexer_file {
 /*
  * Struct: lexer_file_identifiers
  * ----------------------------
- * Holds all identifiers of a file, it's amount and a possible error
+ * Holds all identifiers of a file, it's size and a possible error
  */
 struct lexer_file_identifiers {
     char **identifiers;
