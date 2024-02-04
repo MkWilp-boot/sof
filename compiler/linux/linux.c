@@ -1,24 +1,24 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "win64.h"
+#include "../../parser/structs.h"
 
-#include "../../../../pkg/error_codes.h"
-#include "../../../structs.h"
+#include "linux.h"
 
-void compile_win64(struct parser_array_token parser_tokens) {
+void compile_linux(struct parser_array_token parser_tokens) {
     FILE *file = fopen(ASM_OUT_DIR, "w");
 
-    fprintf(file, "%s", "include C:\\masm64\\include64\\masm64rt.inc\n");
-    fprintf(file, "%s", ".CODE\n");
-    fprintf(file, "%s", "main proc\n");
+    fprintf(file, "BITS 64\n");
+    fprintf(file, "global _start\n");
+    fprintf(file, "section .text\n");
+    fprintf(file, "_start:\n");
     for(size_t ip = 0; ip < parser_tokens.size; ++ip) {
         const parser_token_t token = parser_tokens.array[ip];
         
         switch(token.operation) {
         case PARSER_PUSH: {
             char* command = malloc(sizeof(char)*20);
-            sprintf(command, "push      %lld\n", token.data.u64_value);
+            sprintf(command, "push      %ld\n", token.data.u64_value);
             fprintf(file, "     %s", command);
             free(command);
             break;
@@ -47,19 +47,16 @@ void compile_win64(struct parser_array_token parser_tokens) {
             fprintf(file, "     push    rax\n");
             break;
         }
-        default:
-            fprintf(stderr, "Unknow operation '%d'\n", token.operation);
-            exit(ERR_UNKNOW_OPERATION);
         }
     }
-    fprintf(file, "%s", "\tpop rax\n");
-    fprintf(file, "%s", "\tconout str$(rax)\n");
-    fprintf(file, "%s", "\tinvoke ExitProcess, 0\n");
-    fprintf(file, "%s", "main endp\n");
-    fprintf(file, "%s", "end\n");
+
+    fprintf(file, "     pop     rax\n");
+    fprintf(file, "     mov     rdi, rax\n");
+    fprintf(file, "     mov     rax, 0x3c\n");
+    fprintf(file, "     syscall\n");
 
     fclose(file);
 
-    system(MASM_CMD);
-    system(WIN_CLEAR_COMPILATION_FILES);
+    system(NASM_CMD);
+    system(LINKER_CMD);
 }

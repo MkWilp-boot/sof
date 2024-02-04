@@ -3,9 +3,9 @@
 #include <stdint.h>
 #include <assert.h>
 
-#include "sof_compiler.h"
+#include "compiler.h"
 
-#include "../structs.h"
+#include "../parser/structs.h"
 
 #if defined(W64)
 

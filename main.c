@@ -8,7 +8,7 @@
 
 #include "parser/parser.h"
 #include "parser/structs.h"
-#include "parser/compiler/sof_compiler.h"
+#include "compiler/compiler.h"
 
 int main() {
     struct lexer_file file = lexer_read("main.sof");

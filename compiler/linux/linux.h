@@ -1,5 +1,5 @@
-#ifndef SOF_COMPILER_LINUX_H
-#define SOF_COMPILER_LINUX_H
+#ifndef COMPILER_LINUX_H
+#define COMPILER_LINUX_H
 
 #include "../common.h"
 
@@ -13,4 +13,4 @@
  */
 void compile_linux(struct parser_array_token parser_tokens);
 
-#endif // SOF_COMPILER_LINUX_H
+#endif // COMPILER_LINUX_H
