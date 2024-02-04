@@ -67,7 +67,14 @@ static parser_token_t construct_operator(const char *identifier) {
             .operation = PARSER_SUM
         };
         break;
+    case '=':
+        token = (parser_token_t) {
+            .type = PARSER_BOOL,
+            .operation = PARSER_EQ
+        };
+        break;
     default:
+        fprintf(stderr, "Unknow identifier '%c'\n", identifier[0]);
         exit(ERR_UNKNOW_OPERATOR);
         break;
     }
@@ -78,16 +85,15 @@ struct parser_array_token parser_tokenize(struct lexer_file_identifiers *array_f
     parser_token_t *generated_tokens = calloc(array_file_identifiers->size, sizeof(parser_token_t));
 
     for(size_t i = 0; i < array_file_identifiers->size; ++i) {
-        const char *identifier = array_file_identifiers->identifiers[i];
+        const char *const identifier = array_file_identifiers->identifiers[i];
 
-        // unaries
-        if(('-' == identifier[0] || '+' == identifier[0]) && '\0' != identifier[1]) {
+        if(IS_UNARY_OPERATION(identifier[0], identifier[1])) {
             // identifier[0] is the sign of the identifier.
             parser_token_t token = construct_number(identifier, identifier[0]);
             generated_tokens[i] = token;
         }
         // single operators
-        else if(('-' == identifier[0] || '+' == identifier[0]) && '\0' == identifier[1]) {
+        else if(IS_OPERATOR(identifier[0])) {
             parser_token_t token = construct_operator(identifier);
             generated_tokens[i] = token;
         }

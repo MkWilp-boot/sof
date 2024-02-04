@@ -4,6 +4,14 @@
 #include "../lexer/structs.h"
 #include "structs.h"
 
+#define IS_OPERATOR(op) \
+    '+' == op || \
+    '-' == op || \
+    '=' == op
+
+#define IS_UNARY_OPERATION(fst, snd) \
+    ('-' == fst || '+' == fst) && '\0' != snd
+
 /**
  * @brief creates tokens based on a input file.
  *

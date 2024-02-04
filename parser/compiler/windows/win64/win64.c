@@ -3,9 +3,10 @@
 
 #include "win64.h"
 
+#include "../../../../pkg/error_codes.h"
 #include "../../../structs.h"
 
-void inline compile_win64(struct parser_array_token parser_tokens) {
+void compile_win64(struct parser_array_token parser_tokens) {
     FILE *file = fopen(ASM_OUT_DIR, "w");
 
     fprintf(file, "%s", "include C:\\masm64\\include64\\masm64rt.inc\n");
@@ -17,25 +18,38 @@ void inline compile_win64(struct parser_array_token parser_tokens) {
         switch(token.operation) {
         case PARSER_PUSH: {
             char* command = malloc(sizeof(char)*20);
-            sprintf(command, "push %lld\n", token.data.u64_value);
+            sprintf(command, "push      %lld\n", token.data.u64_value);
             fprintf(file, "     %s", command);
             free(command);
             break;
         }
         case PARSER_SUM: {
-            fprintf(file, "     pop rax\n");
-            fprintf(file, "     pop rbx\n");
-            fprintf(file, "     add rax, rbx\n");
-            fprintf(file, "     push rax\n");
+            fprintf(file, "     pop     rax\n");
+            fprintf(file, "     pop     rbx\n");
+            fprintf(file, "     add     rax, rbx\n");
+            fprintf(file, "     push    rax\n");
             break;
         }
         case PARSER_SUB: {
-            fprintf(file, "     pop rax\n");
-            fprintf(file, "     pop rbx\n");
-            fprintf(file, "     sub rax, rbx\n");
-            fprintf(file, "     push rax\n");
+            fprintf(file, "     pop     rax\n");
+            fprintf(file, "     pop     rbx\n");
+            fprintf(file, "     sub     rax, rbx\n");
+            fprintf(file, "     push    rax\n");
             break;
         }
+        case PARSER_EQ: {
+            fprintf(file, "     pop     rax\n");
+            fprintf(file, "     pop     rbx\n");
+            fprintf(file, "     cmp     rax, rbx\n");
+            fprintf(file, "     mov     rax, 0\n");
+            fprintf(file, "     mov     rbx, 1\n");
+            fprintf(file, "     cmove   rax, rbx\n");
+            fprintf(file, "     push    rax\n");
+            break;
+        }
+        default:
+            fprintf(stderr, "Unknow operation '%d'\n", token.operation);
+            exit(ERR_UNKNOW_OPERATION);
         }
     }
     fprintf(file, "%s", "\tpop rax\n");

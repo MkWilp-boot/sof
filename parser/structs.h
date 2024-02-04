@@ -9,7 +9,8 @@
 enum parser_operation {
     PARSER_PUSH,
     PARSER_SUM,
-    PARSER_SUB
+    PARSER_SUB,
+    PARSER_EQ
 };
 
 /**
@@ -19,7 +20,8 @@ enum parser_operation_type {
     PARSER_INT32,
     PARSER_UINT32,
     PARSER_INT64,
-    PARSER_UINT64
+    PARSER_UINT64,
+    PARSER_BOOL
 };
 
 /**
