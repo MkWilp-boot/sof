@@ -47,13 +47,16 @@ void compile_win64(struct parser_array_token parser_tokens) {
             fprintf(file, "     push    rax\n");
             break;
         }
+        case PARSER_PRINT: {
+            fprintf(file, "     pop     rcx\n");
+            fprintf(file, "     conout str$(rcx)\n");
+            break;
+        }
         default:
             fprintf(stderr, "Unknow operation '%d'\n", token.operation);
             exit(ERR_UNKNOW_OPERATION);
         }
     }
-    fprintf(file, "%s", "\tpop rax\n");
-    fprintf(file, "%s", "\tconout str$(rax)\n");
     fprintf(file, "%s", "\tinvoke ExitProcess, 0\n");
     fprintf(file, "%s", "main endp\n");
     fprintf(file, "%s", "end\n");

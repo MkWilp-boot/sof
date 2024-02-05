@@ -81,9 +81,26 @@ static parser_token_t construct_operator(const char *identifier) {
     return token;
 }
 
+static parser_token_t construct_symbol(const char *const identifier) {
+    if(0 == strcmp("print", identifier)) {
+        parser_token_t token = {
+            .data = {0},
+            .params = NULL,
+            .type = PARSER_VOID,
+            .operation = PARSER_PRINT
+        };
+        return token;
+    }
+    
+    fprintf(stderr, "undefined identifier '%s'\n", identifier);
+    exit(ERR_UNKNOW_IDENTIFIER);
+}
+
 struct parser_array_token parser_tokenize(struct lexer_file_identifiers *array_file_identifiers) {
     parser_token_t *generated_tokens = calloc(array_file_identifiers->size, sizeof(parser_token_t));
 
+    // 
+    char *discart_number_conversion;
     for(size_t i = 0; i < array_file_identifiers->size; ++i) {
         const char *const identifier = array_file_identifiers->identifiers[i];
 
@@ -97,9 +114,17 @@ struct parser_array_token parser_tokenize(struct lexer_file_identifiers *array_f
             parser_token_t token = construct_operator(identifier);
             generated_tokens[i] = token;
         }
-        else {
+        else if(strtol(identifier, &discart_number_conversion, 10) && *discart_number_conversion == '\0') {
             // always generates a positive numbers.
+            printf("%s\n", identifier);
             parser_token_t token = construct_number(identifier, '+');
+            generated_tokens[i] = token;
+
+            // clean our trash
+            discart_number_conversion = NULL;
+        }
+        else {
+            parser_token_t token = construct_symbol(identifier);
             generated_tokens[i] = token;
         }
     }
