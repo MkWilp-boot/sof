@@ -166,7 +166,10 @@ struct lexer_file_identifiers lexer_build_identifiers(struct lexer_file file) {
     }
 
     //last identifier will be missed unless
-    struct lexer_identifier_allocation_result identifiers_result = create_identifier(file, file.bytes_sz, last_chopped_str_position+1);
+#ifdef W64
+    last_chopped_str_position++;
+#endif
+    struct lexer_identifier_allocation_result identifiers_result = create_identifier(file, file.bytes_sz, last_chopped_str_position);
     if(0 != identifiers_result.error_code) {
         struct lexer_file_identifiers l_file = { 
             .size = 0,
@@ -193,7 +196,7 @@ void inline lexer_free_identifiers(struct lexer_file_identifiers *identifiers) {
     if(NULL == identifiers) {
         return;
     }
-    for(size_t i = 0; i < identifiers->size; ++i) {
+    for(size_t i = 0; i < identifiers->size; i++) {
         if(NULL != identifiers->identifiers[i]) {
             free(identifiers->identifiers[i]);
             identifiers->identifiers[i] = NULL;

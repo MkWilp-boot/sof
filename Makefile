@@ -9,16 +9,17 @@ WIN_CUR_DIR := $(subst /,\,$(dir $(realpath $(lastword $(MAKEFILE_LIST)))))
 
 win64: common_objs.o
 	$(CC) -D W64 -c compiler/compiler.c -o objects/compiler.o $(C_flags)
+	$(CC) -D W64 -c lexer/lexer.c -o objects/lexer.o $(C_flags)
 	$(CC) -c compiler/windows/win64/win64.c -o objects/win64.o $(C_flags)
 	$(CC) objects/sof.o objects/lexer.o objects/parser.o objects/compiler.o objects/win64.o -o sof.exe $(C_flags)
 
 linux: common_objs.o
 	$(CC) -D L64 -c compiler/compiler.c -o objects/compiler.o $(C_flags)
+	$(CC) -D L64 -c lexer/lexer.c -o objects/lexer.o $(C_flags)
 	$(CC) -c compiler/linux/linux.c -o objects/linux.o $(C_flags)
 	$(CC) objects/sof.o objects/lexer.o objects/parser.o objects/compiler.o objects/linux.o -o sof.run $(C_flags)
 
 common_objs.o:
-	$(CC) -c lexer/lexer.c -o objects/lexer.o $(C_flags)
 	$(CC) -c parser/parser.c -o objects/parser.o $(C_flags)
 	$(CC) -c main.c -o objects/sof.o $(C_flags) -g
 

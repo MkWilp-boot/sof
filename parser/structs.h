@@ -42,23 +42,33 @@ union parser_data {
     uint64_t u64_value;
 };
 
+struct parser_token_operation_dependency {
+    enum parser_operation *dependencies;
+    size_t size;
+};
+
+struct parser_token_type_dependency {
+    enum parser_operation_type *dependencies;
+    size_t size;
+};
+
 /**
  * @brief Holds all data that identifies a valid SOF instruction token.
  */
 typedef struct parser_token {
     enum parser_operation operation;
-    enum parser_operation_type *pre_op_type_dependencies;
-    enum parser_operation_type *post_op_type_dependencies;
-
-    enum parser_operation *optional_operations;
-
-    enum parser_operation *pre_operations_dependencies;
-    enum parser_operation *post_operations_dependencies;
-
     enum parser_operation_type type;
 
     union parser_data data;
     union parser_data *params;
+
+    struct parser_token_type_dependency *pre_op_type_dependencies;
+    struct parser_token_type_dependency *post_op_type_dependencies;
+
+    struct parser_token_operation_dependency *optional_operations;
+
+    struct parser_token_operation_dependency *pre_operations_dependencies;
+    struct parser_token_operation_dependency *post_operations_dependencies;
 } parser_token_t;
 
 struct parser_array_token {

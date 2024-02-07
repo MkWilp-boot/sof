@@ -91,17 +91,19 @@ static inline parser_token_t construct_operator(const char *identifier) {
     return token;
 }
 
-static inline parser_token_t construct_symbol(const char *const identifier, struct dependent_identifiers *depentent_identifers) {
+static inline parser_token_t construct_symbol(const size_t ip, const char *const identifier, struct dependent_identifiers *dependent_identifiers) {
     if(0 == strcmp("print", identifier)) {
-        enum parser_operation_type *before_dependencies = malloc(sizeof(enum parser_operation_type));
-        before_dependencies[0] = PARSER_INT64;
+        struct parser_token_type_dependency *pre_type_deps = malloc(sizeof(struct parser_token_type_dependency));
+        pre_type_deps->dependencies = calloc(1, sizeof(enum parser_operation_type));
+        pre_type_deps->dependencies[0] = PARSER_INT64;
+        pre_type_deps->size = 1;
 
         parser_token_t token = {
             .data = {0},
             .params = NULL,
             .type = PARSER_VOID,
             .operation = PARSER_PRINT,
-            .pre_op_type_dependencies = before_dependencies,
+            .pre_op_type_dependencies = pre_type_deps,
             .post_op_type_dependencies = NULL,
             .pre_operations_dependencies = NULL,
             .post_operations_dependencies = NULL
@@ -109,30 +111,41 @@ static inline parser_token_t construct_symbol(const char *const identifier, stru
         return token;
     }
     else if(0 == strcmp("if", identifier)) {
-        enum parser_operation *post_op_operations = malloc(sizeof(enum parser_operation));
-        enum parser_operation *optional_operations = malloc(sizeof(enum parser_operation));
-        enum parser_operation_type *pre_type_dependencies = malloc(sizeof(enum parser_operation_type));
+        dependent_identifiers->depentent_identifers[dependent_identifiers->size++] = ip;
+        struct parser_token_operation_dependency *pos_op_deps = malloc(sizeof(struct parser_token_operation_dependency));
+        struct parser_token_operation_dependency *opt_op_deps = malloc(sizeof(struct parser_token_operation_dependency));
+        struct parser_token_type_dependency *pre_type_deps = malloc(sizeof(struct parser_token_type_dependency));
 
-        post_op_operations[0] = PARSER_END;
-        optional_operations[0] = PARSER_ELSE;
-        pre_type_dependencies[0] = PARSER_BOOL;
+        pos_op_deps->dependencies = calloc(1, sizeof(enum parser_operation));
+        opt_op_deps->dependencies = calloc(1, sizeof(enum parser_operation));
+        pre_type_deps->dependencies = calloc(1, sizeof(enum parser_operation_type));
+
+        pos_op_deps->size = 1;
+        opt_op_deps->size = 1;
+        pre_type_deps->size = 1;
+
+        pos_op_deps->dependencies[0] = PARSER_END;
+        opt_op_deps->dependencies[0] = PARSER_ELSE;
+        pre_type_deps->dependencies[0] = PARSER_BOOL;
 
         parser_token_t token = {
             .data = {0},
             .params = NULL,
             .type = PARSER_VOID,
             .operation = PARSER_IF,
-            .pre_op_type_dependencies = pre_type_dependencies,
+            .pre_op_type_dependencies = pre_type_deps,
             .post_op_type_dependencies = NULL,
-            .optional_operations = optional_operations,
+            .optional_operations = opt_op_deps,
             .pre_operations_dependencies = NULL,
-            .post_operations_dependencies = post_op_operations,
+            .post_operations_dependencies = pos_op_deps,
         };
         return token;
     }
     else if(0 == strcmp("end", identifier)) {
-        enum parser_operation *pre_op_operations = malloc(sizeof(enum parser_operation));
-        pre_op_operations[0] = PARSER_IF;
+        struct parser_token_operation_dependency *pre_op_deps = malloc(sizeof(struct parser_token_operation_dependency));
+        pre_op_deps->dependencies = calloc(1, sizeof(enum parser_operation));
+        pre_op_deps->dependencies[0]= PARSER_IF;
+        pre_op_deps->size = 1;
 
         parser_token_t token = {
             .data = {0},
@@ -142,7 +155,7 @@ static inline parser_token_t construct_symbol(const char *const identifier, stru
             .pre_op_type_dependencies = NULL,
             .post_op_type_dependencies = NULL,
             .optional_operations = NULL,
-            .pre_operations_dependencies = pre_op_operations,
+            .pre_operations_dependencies = pre_op_deps,
             .post_operations_dependencies = NULL,
         };
         return token;
@@ -151,11 +164,17 @@ static inline parser_token_t construct_symbol(const char *const identifier, stru
     exit(ERR_UNKNOW_IDENTIFIER);
 }
 
+static inline uint8_t parser_token_has_operation_dependencies(parser_token_t *token) {
+    return
+        token->pre_operations_dependencies != NULL ||
+        token->post_operations_dependencies != NULL;
+}
+
 struct parser_array_token parser_tokenize(struct lexer_file_identifiers *array_file_identifiers) {
     parser_token_t *generated_tokens = calloc(array_file_identifiers->size, sizeof(parser_token_t));
 
     uint32_t *depentent_identifers_ptr = calloc(DEPENDENT_IDENTIFIERS_SIZE, sizeof(uint32_t));
-    struct dependent_identifiers depentent_identifers = {
+    struct dependent_identifiers depentent_identifiers = {
         .depentent_identifers = depentent_identifers_ptr,
         .size = 0
     };
@@ -182,18 +201,24 @@ struct parser_array_token parser_tokenize(struct lexer_file_identifiers *array_f
             discart_number_conversion = NULL;
         }
         else {
-            printf("identifier: '%s'\n", identifier);
-            parser_token_t token = construct_symbol(identifier, &depentent_identifers);
+            parser_token_t token = construct_symbol(i, identifier, &depentent_identifiers);
             generated_tokens[i] = token;
         }
     }
-    free(depentent_identifers.depentent_identifers);
+    
+    for(size_t i = 0; i < depentent_identifiers.size; i++) {
+        uint32_t dependent_token_ip = depentent_identifiers.depentent_identifers[i];
+        parser_token_t token = generated_tokens[dependent_token_ip];
+        printf("Dep type: %ld\n", token.post_operations_dependencies->size);
+    }
+
+    free(depentent_identifiers.depentent_identifers);
 
     // frees file_identfiers
     lexer_free_identifiers(array_file_identifiers);
 
     // still working
-    exit(9999);
+    exit(0);
 
     struct parser_array_token parser_tokens = {
         .array = generated_tokens,
