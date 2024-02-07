@@ -2,8 +2,10 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include "../pkg/error_codes.h"
+#include "../pkg/strings.h"
 
 #include "lexer.h"
 #include "structs.h"
@@ -30,15 +32,18 @@ static struct lexer_identifier_allocation_result create_identifier(struct lexer_
 
     strncpy(identifier, file.content + begin, identifer_size);
     identifier[identifer_size] = '\0'; // adding NULL terminator by hand
+
+    char *trim_identifier = trim_whitespace(identifier);
+    
     struct lexer_identifier_allocation_result l_file = { 
-        .identifier = identifier,
+        .identifier = trim_identifier,
         .error_code = 0
     };
     return l_file;
 }
 
 struct lexer_file lexer_read(const char *const file_name) {
-    FILE *source_file = fopen(file_name, "r");
+    FILE *source_file = fopen(file_name, "rb");
 
     if(NULL == source_file) {
         fclose(source_file);
@@ -51,7 +56,7 @@ struct lexer_file lexer_read(const char *const file_name) {
     }
 
     fseek(source_file, 0, SEEK_END);
-    size_t file_bytes_amount = FILE_BYTES_AMOUNT(ftell(source_file));
+    size_t file_bytes_amount = ftell(source_file);
     if(0 >= file_bytes_amount) {
         struct lexer_file c_file = { 
             .bytes_sz = 0,
@@ -61,13 +66,14 @@ struct lexer_file lexer_read(const char *const file_name) {
         return c_file;
     }
 
-    fseek(source_file, 0, SEEK_SET);
+    rewind(source_file);
 
     char *const source_content = malloc(file_bytes_amount);
     size_t file_bytes_read = fread(source_content, 1, file_bytes_amount, source_file);
+    source_content[file_bytes_amount] = '\0';
     fclose(source_file);
 
-    if(file_bytes_read != (file_bytes_amount-1)) {
+    if(file_bytes_read != file_bytes_amount) {
         struct lexer_file c_file = { 
             .bytes_sz = 0,
             .content = NULL, 
@@ -85,19 +91,36 @@ struct lexer_file lexer_read(const char *const file_name) {
 }
 
 struct lexer_file_identifiers lexer_build_identifiers(struct lexer_file file) {
-    size_t identifiers_size = 0;
+    size_t identifiers_count = 0;
+    bool in_substring = false;
 
-    for(uint32_t i = 0; i < file.bytes_sz; ++i) {
-        switch(file.content[i]) {
-            case '\n':
+    for (uint32_t i = 0; i < file.bytes_sz; ++i) {
+        switch (file.content[i]) {
             case ' ':
-                identifiers_size++;
-            break;
+            case '\r':
+            case '\n':
+                if (in_substring) {
+                    // End of the current substring
+                    in_substring = false;
+                    identifiers_count++;
+                }
+                break;
+            default:
+                // Non-space, non-newline character
+                if (!in_substring) {
+                    // Start of a new substring
+                    in_substring = true;
+                }
+                break;
         }
     }
-    identifiers_size++;
 
-    char **const identifiers = calloc(identifiers_size, sizeof(char*));
+    // Check if the last character is part of a substring
+    if (in_substring) {
+        identifiers_count++;
+    }
+
+    char **const identifiers = calloc(identifiers_count, sizeof(char*));
     if(NULL == identifiers) {
         struct lexer_file_identifiers l_file = { 
             .size = 0,
@@ -110,30 +133,40 @@ struct lexer_file_identifiers lexer_build_identifiers(struct lexer_file file) {
     uint32_t last_chopped_str_position = 0;
     uint32_t current_identifier_position = 0;
 
+    in_substring = false;
     for(uint32_t i = 0; i < file.bytes_sz; ++i) {
-        switch(file.content[i]) {
+         switch (file.content[i]) {
+            case ' ':
+            case '\r':
             case '\n':
-            case ' ': {
-                struct lexer_identifier_allocation_result identifiers_result = create_identifier(file, i, last_chopped_str_position);
-                if(0 != identifiers_result.error_code) {
-                    struct lexer_file_identifiers l_file = { 
-                        .size = 0,
-                        .identifiers = NULL,
-                        .error_code = identifiers_result.error_code
-                    };
-                    return l_file;
-                }
+                if (in_substring) {
+                    struct lexer_identifier_allocation_result identifiers_result = create_identifier(file, i, last_chopped_str_position);
+                    if(0 != identifiers_result.error_code) {
+                        struct lexer_file_identifiers l_file = { 
+                            .size = 0,
+                            .identifiers = NULL,
+                            .error_code = identifiers_result.error_code
+                        };
+                        return l_file;
+                    }
 
-                identifiers[current_identifier_position] = identifiers_result.identifier;
-                current_identifier_position++;
-                last_chopped_str_position = i+1;
-            }
-            break;
+                    identifiers[current_identifier_position] = identifiers_result.identifier;
+                    current_identifier_position++;
+                    last_chopped_str_position = i+1;
+
+                    in_substring = false;
+                }
+                break;
+            default:
+                if (!in_substring) {
+                    in_substring = true;
+                }
+                break;
         }
     }
 
     //last identifier will be missed unless
-    struct lexer_identifier_allocation_result identifiers_result = create_identifier(file, file.bytes_sz, last_chopped_str_position);
+    struct lexer_identifier_allocation_result identifiers_result = create_identifier(file, file.bytes_sz, last_chopped_str_position+1);
     if(0 != identifiers_result.error_code) {
         struct lexer_file_identifiers l_file = { 
             .size = 0,
@@ -149,7 +182,7 @@ struct lexer_file_identifiers lexer_build_identifiers(struct lexer_file file) {
     file.content = NULL;
 
     struct lexer_file_identifiers l_file = { 
-        .size = identifiers_size,
+        .size = identifiers_count,
         .identifiers = identifiers,
         .error_code = 0
     };

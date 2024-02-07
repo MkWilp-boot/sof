@@ -11,7 +11,10 @@ enum parser_operation {
     PARSER_SUM,
     PARSER_SUB,
     PARSER_EQ,
-    PARSER_PRINT
+    PARSER_PRINT,
+    PARSER_IF,
+    PARSER_END,
+    PARSER_ELSE
 };
 
 /**
@@ -44,6 +47,14 @@ union parser_data {
  */
 typedef struct parser_token {
     enum parser_operation operation;
+    enum parser_operation_type *pre_op_type_dependencies;
+    enum parser_operation_type *post_op_type_dependencies;
+
+    enum parser_operation *optional_operations;
+
+    enum parser_operation *pre_operations_dependencies;
+    enum parser_operation *post_operations_dependencies;
+
     enum parser_operation_type type;
 
     union parser_data data;
