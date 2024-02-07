@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdbool.h>
 
 #include "../lexer/structs.h"
 #include "../lexer/lexer.h"
@@ -37,6 +38,8 @@ static inline parser_token_t construct_number(const char *identifier, const char
     token.params = NULL;
     token.operation = PARSER_PUSH;
     token.type = unary_operator == '-' ? PARSER_INT64 : PARSER_UINT64;
+
+    printf("token.type %d\n", token.type);
 
     switch(token.type) {
     case PARSER_INT64: 
@@ -93,9 +96,10 @@ static inline parser_token_t construct_operator(const char *identifier) {
 
 static inline parser_token_t construct_symbol(const size_t ip, const char *const identifier, struct dependent_identifiers *dependent_identifiers) {
     if(0 == strcmp("print", identifier)) {
+        dependent_identifiers->depentent_identifers[dependent_identifiers->size++] = ip;
         struct parser_token_type_dependency *pre_type_deps = malloc(sizeof(struct parser_token_type_dependency));
         pre_type_deps->dependencies = calloc(1, sizeof(enum parser_operation_type));
-        pre_type_deps->dependencies[0] = PARSER_INT64;
+        pre_type_deps->dependencies[0] = PARSER_UINT64;
         pre_type_deps->size = 1;
 
         parser_token_t token = {
@@ -142,6 +146,7 @@ static inline parser_token_t construct_symbol(const size_t ip, const char *const
         return token;
     }
     else if(0 == strcmp("end", identifier)) {
+        dependent_identifiers->depentent_identifers[dependent_identifiers->size++] = ip;
         struct parser_token_operation_dependency *pre_op_deps = malloc(sizeof(struct parser_token_operation_dependency));
         pre_op_deps->dependencies = calloc(1, sizeof(enum parser_operation));
         pre_op_deps->dependencies[0]= PARSER_IF;
@@ -192,7 +197,7 @@ struct parser_array_token parser_tokenize(struct lexer_file_identifiers *array_f
             parser_token_t token = construct_operator(identifier);
             generated_tokens[i] = token;
         }
-        else if(strtol(identifier, &discart_number_conversion, 10) && *discart_number_conversion == '\0') {
+        else if(0 <= strtol(identifier, &discart_number_conversion, 10) && *discart_number_conversion == '\0') {
             // always generates a positive numbers.
             parser_token_t token = construct_number(identifier, '+');
             generated_tokens[i] = token;
@@ -205,11 +210,28 @@ struct parser_array_token parser_tokenize(struct lexer_file_identifiers *array_f
             generated_tokens[i] = token;
         }
     }
-    
+
     for(size_t i = 0; i < depentent_identifiers.size; i++) {
         uint32_t dependent_token_ip = depentent_identifiers.depentent_identifers[i];
+
         parser_token_t token = generated_tokens[dependent_token_ip];
-        printf("Dep type: %ld\n", token.post_operations_dependencies->size);
+        bool found_valid_pre_type_token = false;
+        if(token.pre_op_type_dependencies->size > 0) {
+            for(size_t j = token.pre_op_type_dependencies->size; j > 0; j--) {
+                if(token.pre_op_type_dependencies->dependencies[j] == generated_tokens[dependent_token_ip-j].type) {
+                    found_valid_pre_type_token = true;
+                }
+            }
+            printf("found_valid_pre_type_token %d\n", found_valid_pre_type_token);
+            if(!found_valid_pre_type_token) {
+                printf("false\n");
+            }
+        }
+
+        // parser_token_t a = generated_tokens[dependent_token_ip-1];
+        // printf("Dep size: %ld\n", token.pre_op_type_dependencies->size);
+        // printf("Dep type: %d\n", token.pre_op_type_dependencies->dependencies[0]);
+        // printf("a type: %d\n", a.type);
     }
 
     free(depentent_identifiers.depentent_identifers);
