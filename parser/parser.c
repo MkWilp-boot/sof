@@ -39,8 +39,6 @@ static inline parser_token_t construct_number(const char *identifier, const char
     token.operation = PARSER_PUSH;
     token.type = unary_operator == '-' ? PARSER_INT64 : PARSER_UINT64;
 
-    printf("token.type %d\n", token.type);
-
     switch(token.type) {
     case PARSER_INT64: 
         token_data = (union parser_data) { .i64_value = atoi(identifier) };
@@ -70,13 +68,13 @@ static inline parser_token_t construct_operator(const char *identifier) {
     switch (identifier[0]) {
     case '-':
         token = (parser_token_t) {
-            .type = PARSER_INT64,
+            .type = PARSER_INT_LIKE,
             .operation = PARSER_SUB
         };
         break;
     case '+':
         token = (parser_token_t) {
-            .type = PARSER_INT64,
+            .type = PARSER_INT_LIKE,
             .operation = PARSER_SUM
         };
         break;
@@ -99,7 +97,7 @@ static inline parser_token_t construct_symbol(const size_t ip, const char *const
         dependent_identifiers->depentent_identifers[dependent_identifiers->size++] = ip;
         struct parser_token_type_dependency *pre_type_deps = malloc(sizeof(struct parser_token_type_dependency));
         pre_type_deps->dependencies = calloc(1, sizeof(enum parser_operation_type));
-        pre_type_deps->dependencies[0] = PARSER_UINT64;
+        pre_type_deps->dependencies[0] = PARSER_INT_LIKE;
         pre_type_deps->size = 1;
 
         parser_token_t token = {
@@ -212,19 +210,31 @@ struct parser_array_token parser_tokenize(struct lexer_file_identifiers *array_f
     }
 
     for(size_t i = 0; i < depentent_identifiers.size; i++) {
-        uint32_t dependent_token_ip = depentent_identifiers.depentent_identifers[i];
-
-        parser_token_t token = generated_tokens[dependent_token_ip];
         bool found_valid_pre_type_token = false;
+        uint32_t dependent_token_ip = depentent_identifiers.depentent_identifers[i];
+        parser_token_t token = generated_tokens[dependent_token_ip];
+
         if(token.pre_op_type_dependencies->size > 0) {
             for(size_t j = token.pre_op_type_dependencies->size; j > 0; j--) {
-                if(token.pre_op_type_dependencies->dependencies[j] == generated_tokens[dependent_token_ip-j].type) {
-                    found_valid_pre_type_token = true;
+                switch (token.pre_op_type_dependencies->dependencies[j-1])
+                {
+                case PARSER_INT_LIKE: {
+                    if(IS_INT_LIKE(generated_tokens[dependent_token_ip-j].type)) {
+                        found_valid_pre_type_token = true;
+                    }
+                    else if(PRODUCE_INT_LIKE(generated_tokens[dependent_token_ip-j].operation)) {
+                        found_valid_pre_type_token = true;
+                    }
+                    break;
+                }
+                default:
+                    fprintf(stderr, "%s", "ERR_UNKNOW_TYPE_DEPENDENCY\n");
+                    exit(ERR_UNKNOW_TYPE_DEPENDENCY);
                 }
             }
-            printf("found_valid_pre_type_token %d\n", found_valid_pre_type_token);
             if(!found_valid_pre_type_token) {
-                printf("false\n");
+                fprintf(stderr, "%s", "ERR_TOKEN_PRE_TYPE_DEPENDENCIES_NOT_SATISFIED\n");
+                exit(ERR_TOKEN_PRE_TYPE_DEPENDENCIES_NOT_SATISFIED);
             }
         }
 

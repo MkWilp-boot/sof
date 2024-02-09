@@ -25,6 +25,7 @@ enum parser_operation_type {
     PARSER_UINT32,
     PARSER_INT64,
     PARSER_UINT64,
+    PARSER_INT_LIKE,
     PARSER_BOOL,
     PARSER_VOID
 };
