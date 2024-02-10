@@ -234,7 +234,7 @@ size_t type_dependency_rate(const parser_token_t *const array_generated_tokens, 
     size_t dependencies_found = 0;
     switch(dependent_token->pre_op_type_dependencies->array_dependencies[index-1].dependency) {
     case PARSER_INT_LIKE: {
-        if(IS_INT_LIKE(token->type)) {
+        if(IS_INT_LIKE(token->type) || PRODUCE_INT_LIKE(token->operation)) {
             dependencies_found++;
         }
         break;

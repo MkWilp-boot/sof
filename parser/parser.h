@@ -13,15 +13,15 @@
     ('-' == fst || '+' == fst) && '\0' != snd
 
 #define IS_INT_LIKE(t) \
-    t == PARSER_INT64 || \
-    t == PARSER_INT32 || \
-    t == PARSER_UINT64 || \
-    t == PARSER_UINT32
+    ( t == PARSER_INT64 || \
+      t == PARSER_INT32 || \
+      t == PARSER_UINT64 || \
+      t == PARSER_UINT32 )
 
 #define PRODUCE_INT_LIKE(t) \
-    t == PARSER_EQ || \
-    t == PARSER_SUM || \
-    t == PARSER_SUB
+    ( t == PARSER_EQ || \
+      t == PARSER_SUM || \
+      t == PARSER_SUB )
 
 #define PRODUCE_BOOL(t) \
     t == PARSER_EQ
