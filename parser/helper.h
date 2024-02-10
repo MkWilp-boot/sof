@@ -21,7 +21,7 @@ struct dependent_identifiers {
 };
 
 /**
- * @brief Constructs a struct parser_token number from a char* identifier.
+ * @brief Constructs a struct parser_token_t number from a char* identifier.
  *
  * @param identifier full identifier to be processed.
  * @param unary_operator sign of the identifier.
@@ -54,7 +54,7 @@ static parser_token_t construct_number(const char *identifier, const char unary_
 }
 
 /**
- * @brief Constructs a struct parser_token operator from a char *identifier.
+ * @brief Constructs a struct parser_token_t operator from a char *identifier.
  *
  * @param identifier full identifier to be processed.
  * 
@@ -91,9 +91,20 @@ static parser_token_t construct_operator(const char *identifier) {
     return token;
 }
 
-static parser_token_t construct_symbol(const size_t ip, const char *const identifier, struct dependent_identifiers *dependent_identifiers) {
+/**
+ * @brief Constructs a struct parser_token_t operator from a char *identifier.
+ *
+ * @param ip Instruction pointer
+ * @param identifier Full identifier to be processed.
+ * @param  array_dependent_identifiers Array of tokens that are dependent on something else
+ * 
+ * @attention This function is private to it's unit
+ * 
+ * @return parsed identifier.
+ */
+static parser_token_t construct_symbol(const size_t ip, const char *const identifier, struct dependent_identifiers *array_dependent_identifiers) {
     if(0 == strcmp("print", identifier)) {
-        dependent_identifiers->depentent_identifers[dependent_identifiers->size++] = ip;
+        array_dependent_identifiers->depentent_identifers[array_dependent_identifiers->size++] = ip;
         struct parser_token_type_dependency *pre_type_deps = malloc(sizeof(struct parser_token_type_dependency));
         pre_type_deps->array_dependencies = calloc(1, sizeof(parser_token_type_dependency_details_t));
         pre_type_deps->size = 1;
@@ -115,7 +126,7 @@ static parser_token_t construct_symbol(const size_t ip, const char *const identi
         return token;
     }
     else if(0 == strcmp("if", identifier)) {
-        dependent_identifiers->depentent_identifers[dependent_identifiers->size++] = ip;
+        array_dependent_identifiers->depentent_identifers[array_dependent_identifiers->size++] = ip;
         struct parser_token_operation_dependency *pos_op_deps = malloc(sizeof(struct parser_token_operation_dependency));
         struct parser_token_operation_dependency *opt_op_deps = malloc(sizeof(struct parser_token_operation_dependency));
         struct parser_token_type_dependency *pre_type_deps = malloc(sizeof(struct parser_token_type_dependency));
@@ -146,7 +157,7 @@ static parser_token_t construct_symbol(const size_t ip, const char *const identi
         return token;
     }
     else if(0 == strcmp("end", identifier)) {
-        dependent_identifiers->depentent_identifers[dependent_identifiers->size++] = ip;
+        array_dependent_identifiers->depentent_identifers[array_dependent_identifiers->size++] = ip;
         struct parser_token_operation_dependency *pre_op_deps = malloc(sizeof(struct parser_token_operation_dependency));
         pre_op_deps->array_dependencies = calloc(1, sizeof(parser_token_operation_dependency_details_t));
         pre_op_deps->array_dependencies[0] = (parser_token_operation_dependency_details_t) { .dependency = PARSER_IF, .position_rel_to_token = 0 };
@@ -169,6 +180,17 @@ static parser_token_t construct_symbol(const size_t ip, const char *const identi
     exit(ERR_UNKNOW_IDENTIFIER);
 }
 
+
+/**
+ * @brief Validates if `token` satifies the a dependency of `dependent_token` for types
+ *
+ * @param array_generated_tokens Array of all tokens.
+ * @param index current index of the tokens array.
+ * @param dependent_token token to match dependencies.
+ * @param token token to verify the dependency.
+ * 
+ * @return number of dependencies satisfied.
+ */
 size_t type_dependency_rate(const parser_token_t *const array_generated_tokens, const size_t index, const parser_token_t *const dependent_token, const parser_token_t *const token) {
     size_t dependencies_found = 0;
     switch(dependent_token->pre_op_type_dependencies->array_dependencies[index-1].dependency) {
@@ -187,6 +209,16 @@ size_t type_dependency_rate(const parser_token_t *const array_generated_tokens, 
     return dependencies_found;
 }
 
+/**
+ * @brief Validates if `token` satifies the a dependency of `dependent_token` for operations
+ *
+ * @param array_generated_tokens Array of all tokens.
+ * @param index current index of the tokens array.
+ * @param dependent_token token to match dependencies.
+ * @param token token to verify the dependency.
+ * 
+ * @return number of dependencies satisfied.
+ */
 size_t operation_dependency_rate(const parser_token_t *const array_generated_tokens, const size_t index, const parser_token_t *const dependent_token, const parser_token_t *const token) {
     size_t dependencies_found = 0;
     if(token->operation == dependent_token->pre_operations_dependencies->array_dependencies[index-1].dependency) {
