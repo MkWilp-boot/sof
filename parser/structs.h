@@ -43,13 +43,23 @@ union parser_data {
     uint64_t u64_value;
 };
 
+typedef struct {
+    enum parser_operation dependency;
+    int8_t position_rel_to_token;
+} parser_token_operation_dependency_details_t;
+
+typedef struct {
+    enum parser_operation_type dependency;
+    int8_t position_rel_to_token;
+} parser_token_type_dependency_details_t;
+
 struct parser_token_operation_dependency {
-    enum parser_operation *dependencies;
+    parser_token_operation_dependency_details_t *array_dependencies;
     size_t size;
 };
 
 struct parser_token_type_dependency {
-    enum parser_operation_type *dependencies;
+    parser_token_type_dependency_details_t *array_dependencies;
     size_t size;
 };
 
