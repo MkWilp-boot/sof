@@ -71,12 +71,27 @@ static parser_token_t construct_operator(const size_t ip, const char *identifier
             .operation = PARSER_SUB
         };
         break;
-    case '+':
+    case '+': {
+        array_dependent_identifiers->depentent_identifers[array_dependent_identifiers->size++] = ip;
+        struct parser_token_type_dependency* array_p_type_deps = malloc(sizeof(struct parser_token_type_dependency));
+        array_p_type_deps->size = 2;
+        array_p_type_deps->array_dependencies = calloc(2, sizeof(parser_token_type_dependency_details_t));
+        array_p_type_deps->array_dependencies[0] = (parser_token_type_dependency_details_t) {
+            .dependency = PARSER_INT_LIKE,
+            .position_rel_to_token = -1
+        };
+        array_p_type_deps->array_dependencies[1] = (parser_token_type_dependency_details_t) {
+            .dependency = PARSER_INT_LIKE,
+            .position_rel_to_token = -2
+        };
+
         token = (parser_token_t) {
             .type = PARSER_INT_LIKE,
-            .operation = PARSER_SUM
+            .operation = PARSER_SUM,
+            .pre_op_type_dependencies = array_p_type_deps
         };
         break;
+    }
     case '=': {
         array_dependent_identifiers->depentent_identifers[array_dependent_identifiers->size++] = ip;
         struct parser_token_type_dependency* array_p_type_deps = malloc(sizeof(struct parser_token_type_dependency));

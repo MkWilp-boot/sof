@@ -24,7 +24,8 @@ static inline void validate_token_pre_type_dependencies(const parser_token_t *co
                 if(required_dependencie_position < 0) {
                     int index = dependent_token_ip+required_dependencie_position;
                     if(index < 0) {
-                        index = 0;
+                        fprintf(stderr, "%s", "ERR_TOKEN_PRE_TYPE_DEPENDENCIES_NOT_SATISFIED\n");
+                        exit(ERR_TOKEN_PRE_TYPE_DEPENDENCIES_NOT_SATISFIED);
                     }
                     parser_token_t token = array_generated_tokens[index];
                     dependencies_found += type_dependency_rate(array_generated_tokens, j, &dependent_token, &token);
