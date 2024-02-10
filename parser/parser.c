@@ -93,7 +93,7 @@ struct parser_array_token parser_tokenize(struct lexer_file_identifiers *array_f
         }
         // single operators
         else if(IS_OPERATOR(identifier[0])) {
-            parser_token_t token = construct_operator(identifier);
+            parser_token_t token = construct_operator(i, identifier, &dependent_identifiers);
             generated_tokens[i] = token;
         }
         else if(0 <= strtol(identifier, &discart_number_conversion, 10) && *discart_number_conversion == '\0') {

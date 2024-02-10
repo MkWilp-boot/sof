@@ -62,7 +62,7 @@ static parser_token_t construct_number(const char *identifier, const char unary_
  * 
  * @return parsed identifier.
  */
-static parser_token_t construct_operator(const char *identifier) {
+static parser_token_t construct_operator(const size_t ip, const char *identifier, struct dependent_identifiers *array_dependent_identifiers) {
     parser_token_t token;
     switch (identifier[0]) {
     case '-':
@@ -77,12 +77,22 @@ static parser_token_t construct_operator(const char *identifier) {
             .operation = PARSER_SUM
         };
         break;
-    case '=':
+    case '=': {
+        array_dependent_identifiers->depentent_identifers[array_dependent_identifiers->size++] = ip;
+        struct parser_token_type_dependency* array_p_type_deps = malloc(sizeof(struct parser_token_type_dependency));
+        array_p_type_deps->size = 1;
+        array_p_type_deps->array_dependencies = calloc(1, sizeof(parser_token_type_dependency_details_t));
+        array_p_type_deps->array_dependencies[0] = (parser_token_type_dependency_details_t) {
+            .dependency = PARSER_INT_LIKE,
+            .position_rel_to_token = -1
+        };
         token = (parser_token_t) {
             .type = PARSER_BOOL,
-            .operation = PARSER_EQ
+            .operation = PARSER_EQ,
+            .pre_op_type_dependencies = array_p_type_deps
         };
         break;
+    }
     default:
         fprintf(stderr, "Unknow identifier '%c'\n", identifier[0]);
         exit(ERR_UNKNOW_OPERATOR);
