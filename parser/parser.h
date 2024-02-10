@@ -23,6 +23,9 @@
     t == PARSER_SUM || \
     t == PARSER_SUB
 
+#define PRODUCE_BOOL(t) \
+    t == PARSER_EQ
+
 /**
  * @brief creates tokens based on a input file.
  *
