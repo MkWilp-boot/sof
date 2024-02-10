@@ -167,7 +167,11 @@ struct lexer_file_identifiers lexer_build_identifiers(struct lexer_file file) {
 
     //last identifier will be missed unless
 #ifdef W64
-    last_chopped_str_position++;
+    if('\r' == file.content[last_chopped_str_position] ||
+       '\n' == file.content[last_chopped_str_position] ||
+       ' ' == file.content[last_chopped_str_position]) {
+            last_chopped_str_position++;
+       }
 #endif
     struct lexer_identifier_allocation_result identifiers_result = create_identifier(file, file.bytes_sz, last_chopped_str_position);
     if(0 != identifiers_result.error_code) {
