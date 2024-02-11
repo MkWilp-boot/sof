@@ -34,7 +34,6 @@ static struct lexer_identifier_allocation_result create_identifier(struct lexer_
     identifier[identifer_size] = '\0'; // adding NULL terminator by hand
 
     char *trim_identifier = trim_whitespace(identifier);
-    
     struct lexer_identifier_allocation_result l_file = { 
         .identifier = trim_identifier,
         .error_code = 0
@@ -173,16 +172,18 @@ struct lexer_file_identifiers lexer_build_identifiers(struct lexer_file file) {
             last_chopped_str_position++;
        }
 #endif
-    struct lexer_identifier_allocation_result identifiers_result = create_identifier(file, file.bytes_sz, last_chopped_str_position);
-    if(0 != identifiers_result.error_code) {
-        struct lexer_file_identifiers l_file = { 
-            .size = 0,
-            .identifiers = NULL,
-            .error_code = identifiers_result.error_code
-        };
-        return l_file;
+    if(file.bytes_sz != last_chopped_str_position) {
+        struct lexer_identifier_allocation_result identifiers_result = create_identifier(file, file.bytes_sz, last_chopped_str_position);
+        if(0 != identifiers_result.error_code) {
+            struct lexer_file_identifiers l_file = { 
+                .size = 0,
+                .identifiers = NULL,
+                .error_code = identifiers_result.error_code
+            };
+            return l_file;
+        }
+        identifiers[current_identifier_position] = identifiers_result.identifier;
     }
-    identifiers[current_identifier_position] = identifiers_result.identifier;
 
     // free file.content as mentioned
     free(file.content);
