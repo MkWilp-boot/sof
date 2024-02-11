@@ -285,12 +285,11 @@ size_t pos_type_dependency_rate(const parser_token_t *const array_generated_toke
  * 
  * @return number of dependencies satisfied.
  */
-size_t pre_operation_dependency_rate(const parser_token_t *const array_generated_tokens, const size_t index, const parser_token_t *const dependent_token, const parser_token_t *const token) {
-    size_t dependencies_found = 0;
-    if(token->operation == dependent_token->pre_operations_dependencies->array_dependencies[index-1].dependency) {
-        dependencies_found++;
+void pre_operation_dependency_rate(const parser_token_t *const array_generated_tokens, const size_t index, const parser_token_t *dependent_token, const parser_token_t *const token) {
+    if(token->operation == dependent_token->pre_operations_dependencies->array_dependencies[index-1].dependency &&
+       dependent_token->pre_operations_dependencies->array_dependencies[index-1].satisfied == false) {
+        dependent_token->pre_operations_dependencies->array_dependencies[index-1].satisfied = true;
     }
-    return dependencies_found;
 }
 
 /**
@@ -303,10 +302,9 @@ size_t pre_operation_dependency_rate(const parser_token_t *const array_generated
  * 
  * @return number of dependencies satisfied.
  */
-size_t pos_operation_dependency_rate(const parser_token_t *const array_generated_tokens, const size_t index, const parser_token_t *const dependent_token, const parser_token_t *const token) {
-    size_t dependencies_found = 0;
-    if(token->operation == dependent_token->pos_operations_dependencies->array_dependencies[index].dependency) {
-        dependencies_found++;
+void pos_operation_dependency_rate(const parser_token_t *const array_generated_tokens, const size_t index, const parser_token_t *const dependent_token, const parser_token_t *const token) {
+    if(token->operation == dependent_token->pos_operations_dependencies->array_dependencies[index].dependency &&
+       dependent_token->pos_operations_dependencies->array_dependencies[index].satisfied == false) {
+        dependent_token->pos_operations_dependencies->array_dependencies[index].satisfied = true;
     }
-    return dependencies_found;
 }

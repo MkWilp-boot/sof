@@ -2,6 +2,7 @@
 #define SOF_PARSER_STRUCTS_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 /**
  * @brief Enumeration of SOF instructions.
@@ -45,11 +46,13 @@ union parser_data {
 
 typedef struct {
     enum parser_operation dependency;
+    bool satisfied;
     int8_t position_rel_to_token;
 } parser_token_operation_dependency_details_t;
 
 typedef struct {
     enum parser_operation_type dependency;
+    bool satisfied;
     int8_t position_rel_to_token;
 } parser_token_type_dependency_details_t;
 

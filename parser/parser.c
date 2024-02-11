@@ -51,21 +51,27 @@ static inline void validate_token_pos_operation_dependencies(const parser_token_
         uint32_t dependent_token_ip = depentent_identifiers->depentent_identifers[i];
         parser_token_t dependent_token = array_generated_tokens[dependent_token_ip];
         if(NULL != dependent_token.pos_operations_dependencies && dependent_token.pos_operations_dependencies->size > 0) {
-            size_t dependencies_found = 0;
             for(size_t j = 0; j < dependent_token.pos_operations_dependencies->size; j++) {
                 int8_t required_dependencie_position = dependent_token.pos_operations_dependencies->array_dependencies[j].position_rel_to_token;
                 if(required_dependencie_position > 0) {
                     parser_token_t token = array_generated_tokens[dependent_token_ip-required_dependencie_position];
-                    dependencies_found += pos_operation_dependency_rate(array_generated_tokens, j, &dependent_token, &token);
+                    pos_operation_dependency_rate(array_generated_tokens, j, &dependent_token, &token);
                 }
                 else {
                     for(size_t k = dependent_token_ip; k < max_array_tokens_size; k++) {
                         parser_token_t token = array_generated_tokens[k];
-                        dependencies_found += pos_operation_dependency_rate(array_generated_tokens, j, &dependent_token, &token);
+                        pos_operation_dependency_rate(array_generated_tokens, j, &dependent_token, &token);
                     }
                 }
             }
-            if(dependencies_found != dependent_token.pos_operations_dependencies->size) {
+
+            size_t dependencies_satisfied = 0;
+            for(size_t j = 0; j < dependent_token.pos_operations_dependencies->size; j++) {
+                if(dependent_token.pos_operations_dependencies->array_dependencies[j].satisfied) {
+                    dependencies_satisfied++;
+                }
+            }
+            if(dependencies_satisfied != dependent_token.pos_operations_dependencies->size) {
                 fprintf(stderr, "%s", "ERR_TOKEN_POS_OPERATION_DEPENDENCIES_NOT_SATISFIED\n");
                 exit(ERR_TOKEN_POS_OPERATION_DEPENDENCIES_NOT_SATISFIED);
             }
@@ -78,24 +84,29 @@ static inline void validate_token_pre_operation_dependencies(const parser_token_
         uint32_t dependent_token_ip = depentent_identifiers->depentent_identifers[i];
         parser_token_t dependent_token = array_generated_tokens[dependent_token_ip];
 
-        size_t dependencies_found = 0;
-
         if(NULL != dependent_token.pre_operations_dependencies && dependent_token.pre_operations_dependencies->size > 0) {
             for(size_t j = dependent_token.pre_operations_dependencies->size; j > 0; j--) {
                 int8_t required_dependencie_position = dependent_token.pre_operations_dependencies->array_dependencies[j-1].position_rel_to_token;
                 if(required_dependencie_position < 0) {
                     parser_token_t token = array_generated_tokens[dependent_token_ip+required_dependencie_position];
-                    dependencies_found += pre_operation_dependency_rate(array_generated_tokens, j, &dependent_token, &token);
+                    pre_operation_dependency_rate(array_generated_tokens, j, &dependent_token, &token);
                 }
                 else {
                     for(size_t k = dependent_token_ip; k > 0; k--) {
                         parser_token_t token = array_generated_tokens[k-1];
-                        dependencies_found += pre_operation_dependency_rate(array_generated_tokens, j, &dependent_token, &token);
+                        pre_operation_dependency_rate(array_generated_tokens, j, &dependent_token, &token);
                     }
                 }
             }
-            
-            if(dependencies_found != dependent_token.pre_operations_dependencies->size) {
+
+            size_t dependencies_satisfied = 0;
+            for(size_t j = dependent_token.pre_operations_dependencies->size; j > 0; j--) {
+                if(dependent_token.pre_operations_dependencies->array_dependencies[j-1].satisfied) {
+                    dependencies_satisfied++;
+                }
+            }
+
+            if(dependencies_satisfied != dependent_token.pre_operations_dependencies->size) {
                 fprintf(stderr, "%s", "ERR_TOKEN_PRE_OPERATION_DEPENDENCIES_NOT_SATISFIED\n");
                 exit(ERR_TOKEN_PRE_OPERATION_DEPENDENCIES_NOT_SATISFIED);
             }
