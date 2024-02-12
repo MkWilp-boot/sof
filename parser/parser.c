@@ -115,7 +115,7 @@ static inline void validate_token_pre_operation_dependencies(const parser_token_
 }
 
 struct parser_array_token parser_tokenize(struct lexer_file_identifiers *array_file_identifiers) {
-    parser_token_t *generated_tokens = calloc(array_file_identifiers->size, sizeof(parser_token_t));
+    parser_token_t *generated_tokens = calloc(array_file_identifiers->len, sizeof(parser_token_t));
 
     uint32_t *depentent_identifers_ptr = calloc(DEPENDENT_IDENTIFIERS_SIZE, sizeof(uint32_t));
     struct dependent_identifiers dependent_identifiers = {
@@ -124,7 +124,7 @@ struct parser_array_token parser_tokenize(struct lexer_file_identifiers *array_f
     };
 
     char *discart_number_conversion;
-    for(size_t i = 0; i < array_file_identifiers->size; ++i) {
+    for(size_t i = 0; i < array_file_identifiers->len; ++i) {
         const char *const identifier = array_file_identifiers->identifiers[i];
         if(IS_UNARY_OPERATION(identifier[0], identifier[1])) {
             // identifier[0] is the sign of the identifier.
@@ -152,7 +152,7 @@ struct parser_array_token parser_tokenize(struct lexer_file_identifiers *array_f
 
     validate_token_pre_type_dependencies(generated_tokens, &dependent_identifiers);
     validate_token_pre_operation_dependencies(generated_tokens, &dependent_identifiers);
-    validate_token_pos_operation_dependencies(generated_tokens, &dependent_identifiers, array_file_identifiers->size);
+    validate_token_pos_operation_dependencies(generated_tokens, &dependent_identifiers, array_file_identifiers->len);
     
     free(dependent_identifiers.depentent_identifers);
 
@@ -163,8 +163,8 @@ struct parser_array_token parser_tokenize(struct lexer_file_identifiers *array_f
     exit(0);
 
     struct parser_array_token parser_tokens = {
-        .array = generated_tokens,
-        .size = array_file_identifiers->size
+        .array = NULL,//generated_tokens,
+        .size = array_file_identifiers->len
     };
     return parser_tokens;
 }

@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
-#include <stdbool.h>
 
 #include "../pkg/error_codes.h"
 #include "../pkg/strings.h"
@@ -12,34 +11,7 @@
 
 #define FILE_BYTES_AMOUNT(bytes) bytes > 0 ? bytes + 1 : 0
 
-struct lexer_identifier_allocation_result {
-    char *identifier;
-    uint8_t error_code;
-};
-
-static struct lexer_identifier_allocation_result create_identifier(struct lexer_file file, uint32_t end, uint32_t begin) {
-    /*Must correct "i"nth indexing to skip/avoid spaces*/
-    size_t identifer_size = ((end - 1) - begin) + 1 /*NULL terminator*/; 
-    char *const identifier = malloc((identifer_size + 1) * sizeof(char));
-
-    if(NULL == identifier) {
-        struct lexer_identifier_allocation_result l_file = { 
-            .identifier = NULL,
-            .error_code = ERR_IDENTIFIER_ALLOCATION
-        };
-        return l_file;
-    }
-
-    strncpy(identifier, file.content + begin, identifer_size);
-    identifier[identifer_size] = '\0'; // adding NULL terminator by hand
-
-    char *trim_identifier = trim_whitespace(identifier);
-    struct lexer_identifier_allocation_result l_file = { 
-        .identifier = trim_identifier,
-        .error_code = 0
-    };
-    return l_file;
-}
+static char *split_file_delimiters = " \t\r\n";
 
 struct lexer_file lexer_read(const char *const file_name) {
     FILE *source_file = fopen(file_name, "rb");
@@ -90,118 +62,39 @@ struct lexer_file lexer_read(const char *const file_name) {
 }
 
 struct lexer_file_identifiers lexer_build_identifiers(struct lexer_file file) {
-    size_t identifiers_count = 0;
-    bool in_substring = false;
+    char *fcontent = malloc(strlen(file.content)*sizeof(char)+1);
+    strcpy(fcontent, file.content);
 
-    for (uint32_t i = 0; i < file.bytes_sz; ++i) {
-        switch (file.content[i]) {
-            case ' ':
-            case '\r':
-            case '\n':
-                if (in_substring) {
-                    // End of the current substring
-                    in_substring = false;
-                    identifiers_count++;
-                }
-                break;
-            default:
-                // Non-space, non-newline character
-                if (!in_substring) {
-                    // Start of a new substring
-                    in_substring = true;
-                }
-                break;
+    struct lexer_file_identifiers array_tokens = {
+        .cap = 1,
+        .len = 0,
+        .identifiers = malloc(1*sizeof(char*))
+    };
+    char *tmp_token = strtok(fcontent, split_file_delimiters);
+    while (tmp_token != NULL) {
+        size_t token_str_size = (strlen(tmp_token)*sizeof(char))+1;
+        char *token_copy = malloc(token_str_size);
+        strcpy(token_copy, tmp_token);
+        
+        token_copy[token_str_size-1] = '\0';
+        if(array_tokens.len >= array_tokens.cap) {
+            array_tokens.cap *= 2;
+            array_tokens.identifiers = realloc(array_tokens.identifiers, array_tokens.cap*sizeof(char*));
         }
+        array_tokens.identifiers[array_tokens.len++] = token_copy;
+        tmp_token = strtok(NULL, split_file_delimiters);
     }
 
-    // Check if the last character is part of a substring
-    if (in_substring) {
-        identifiers_count++;
-    }
-
-    char **const identifiers = calloc(identifiers_count, sizeof(char*));
-    if(NULL == identifiers) {
-        struct lexer_file_identifiers l_file = { 
-            .size = 0,
-            .identifiers = NULL,
-            .error_code = ERR_IDENTIFIERS_ALLOCATION
-        };
-        return l_file;
-    }
-
-    uint32_t last_chopped_str_position = 0;
-    uint32_t current_identifier_position = 0;
-
-    in_substring = false;
-    for(uint32_t i = 0; i < file.bytes_sz; ++i) {
-         switch (file.content[i]) {
-            case ' ':
-            case '\r':
-            case '\n':
-                if (in_substring) {
-                    struct lexer_identifier_allocation_result identifiers_result = create_identifier(file, i, last_chopped_str_position);
-                    if(0 != identifiers_result.error_code) {
-                        struct lexer_file_identifiers l_file = { 
-                            .size = 0,
-                            .identifiers = NULL,
-                            .error_code = identifiers_result.error_code
-                        };
-                        return l_file;
-                    }
-
-                    identifiers[current_identifier_position] = identifiers_result.identifier;
-                    current_identifier_position++;
-                    last_chopped_str_position = i+1;
-
-                    in_substring = false;
-                }
-                break;
-            default:
-                if (!in_substring) {
-                    in_substring = true;
-                }
-                break;
-        }
-    }
-
-    //last identifier will be missed unless
-#ifdef W64
-    if('\r' == file.content[last_chopped_str_position] ||
-       '\n' == file.content[last_chopped_str_position] ||
-       ' ' == file.content[last_chopped_str_position]) {
-            last_chopped_str_position++;
-       }
-#endif
-    if(file.bytes_sz != last_chopped_str_position) {
-        struct lexer_identifier_allocation_result identifiers_result = create_identifier(file, file.bytes_sz, last_chopped_str_position);
-        if(0 != identifiers_result.error_code) {
-            struct lexer_file_identifiers l_file = { 
-                .size = 0,
-                .identifiers = NULL,
-                .error_code = identifiers_result.error_code
-            };
-            return l_file;
-        }
-        identifiers[current_identifier_position] = identifiers_result.identifier;
-    }
-
-    // free file.content as mentioned
     free(file.content);
     file.content = NULL;
-
-    struct lexer_file_identifiers l_file = { 
-        .size = identifiers_count,
-        .identifiers = identifiers,
-        .error_code = 0
-    };
-    return l_file;
+    return array_tokens;
 }
 
 void inline lexer_free_identifiers(struct lexer_file_identifiers *identifiers) {
     if(NULL == identifiers) {
         return;
     }
-    for(size_t i = 0; i < identifiers->size; i++) {
+    for(size_t i = 0; i < identifiers->len; i++) {
         if(NULL != identifiers->identifiers[i]) {
             free(identifiers->identifiers[i]);
             identifiers->identifiers[i] = NULL;

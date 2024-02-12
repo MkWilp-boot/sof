@@ -21,8 +21,8 @@ struct lexer_file {
  */
 struct lexer_file_identifiers {
     char **identifiers;
-    uint8_t error_code;
-    size_t size;
+    size_t len;
+    size_t cap;
 };
 
 #endif  // SOF_LEXER_STRUCTS_H
