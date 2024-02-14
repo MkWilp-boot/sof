@@ -9,8 +9,6 @@
 #include "lexer.h"
 #include "structs.h"
 
-#define FILE_BYTES_AMOUNT(bytes) bytes > 0 ? bytes + 1 : 0
-
 static char *split_file_delimiters = " \t\r\n";
 
 struct lexer_file lexer_read(const char *const file_name) {

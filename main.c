@@ -1,6 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "pkg/error_codes.h"
 
 #include "lexer/lexer.h"
@@ -8,6 +5,7 @@
 
 #include "parser/parser.h"
 #include "parser/structs.h"
+
 #include "compiler/compiler.h"
 
 int main() {

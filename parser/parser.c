@@ -16,8 +16,6 @@ static inline void validate_token_pre_type_dependencies(const parser_token_t *co
         uint32_t dependent_token_ip = depentent_identifiers->depentent_identifers[i];
         parser_token_t dependent_token = array_generated_tokens[dependent_token_ip];
 
-        size_t dependencies_found = 0;
-
         if(NULL != dependent_token.pre_op_type_dependencies && dependent_token.pre_op_type_dependencies->size > 0) {
             for(size_t j = dependent_token.pre_op_type_dependencies->size; j > 0; j--) {
                 int8_t required_dependencie_position = dependent_token.pre_op_type_dependencies->array_dependencies[j-1].position_rel_to_token;
@@ -28,16 +26,22 @@ static inline void validate_token_pre_type_dependencies(const parser_token_t *co
                         exit(ERR_TOKEN_PRE_TYPE_DEPENDENCIES_NOT_SATISFIED);
                     }
                     parser_token_t token = array_generated_tokens[index];
-                    dependencies_found += pre_type_dependency_rate(array_generated_tokens, j, &dependent_token, &token);
+                    pre_type_dependency_rate(array_generated_tokens, j, &dependent_token, &token);
                 }
                 else {
                     for(size_t k = dependent_token_ip; k > 0; k--) {
                         parser_token_t token = array_generated_tokens[k-1];
-                        dependencies_found += pre_type_dependency_rate(array_generated_tokens, j, &dependent_token, &token);
+                        pre_type_dependency_rate(array_generated_tokens, j, &dependent_token, &token);
                     }
                 }
             }
-            if(dependencies_found != dependent_token.pre_op_type_dependencies->size) {
+            size_t dependencies_satisfied = 0;
+            for(size_t j = dependent_token.pre_op_type_dependencies->size; j > 0; j--) {
+                if(dependent_token.pre_op_type_dependencies->array_dependencies[j-1].satisfied) {
+                    dependencies_satisfied++;
+                }
+            }
+            if(dependencies_satisfied != dependent_token.pre_op_type_dependencies->size) {
                 printf("dependent_token.operation %d\n", dependent_token.operation);
                 fprintf(stderr, "%s", "ERR_TOKEN_PRE_TYPE_DEPENDENCIES_NOT_SATISFIED\n");
                 exit(ERR_TOKEN_PRE_TYPE_DEPENDENCIES_NOT_SATISFIED);
@@ -46,32 +50,33 @@ static inline void validate_token_pre_type_dependencies(const parser_token_t *co
     }
 }
 
-static inline void validate_token_pos_operation_dependencies(const parser_token_t *const array_generated_tokens, const struct dependent_identifiers *const depentent_identifiers, const size_t max_array_tokens_size) {
+static inline void validate_token_pos_operation_dependencies(parser_token_t *array_generated_tokens, const struct dependent_identifiers *const depentent_identifiers, const size_t max_array_tokens_size) {
     for(size_t i = 0; i < depentent_identifiers->size; i++) {
         uint32_t dependent_token_ip = depentent_identifiers->depentent_identifers[i];
-        parser_token_t dependent_token = array_generated_tokens[dependent_token_ip];
-        if(NULL != dependent_token.pos_operations_dependencies && dependent_token.pos_operations_dependencies->size > 0) {
-            for(size_t j = 0; j < dependent_token.pos_operations_dependencies->size; j++) {
-                int8_t required_dependencie_position = dependent_token.pos_operations_dependencies->array_dependencies[j].position_rel_to_token;
+        parser_token_t *dependent_token = &array_generated_tokens[dependent_token_ip];
+        if(NULL != dependent_token->pos_operations_dependencies && dependent_token->pos_operations_dependencies->size > 0) {
+            for(size_t j = 0; j < dependent_token->pos_operations_dependencies->size; j++) {
+                int8_t required_dependencie_position = dependent_token->pos_operations_dependencies->array_dependencies[j].position_rel_to_token;
                 if(required_dependencie_position > 0) {
-                    parser_token_t token = array_generated_tokens[dependent_token_ip-required_dependencie_position];
-                    pos_operation_dependency_rate(array_generated_tokens, j, &dependent_token, &token);
+                    int32_t token_index = dependent_token_ip-required_dependencie_position;
+                    parser_token_t *token = &array_generated_tokens[token_index];
+                    pos_operation_dependency_rate(token_index, j, dependent_token, token);
                 }
                 else {
                     for(size_t k = dependent_token_ip; k < max_array_tokens_size; k++) {
-                        parser_token_t token = array_generated_tokens[k];
-                        pos_operation_dependency_rate(array_generated_tokens, j, &dependent_token, &token);
+                        parser_token_t *token = &array_generated_tokens[k];
+                        pos_operation_dependency_rate(k, j, dependent_token, token);
                     }
                 }
             }
 
             size_t dependencies_satisfied = 0;
-            for(size_t j = 0; j < dependent_token.pos_operations_dependencies->size; j++) {
-                if(dependent_token.pos_operations_dependencies->array_dependencies[j].satisfied) {
+            for(size_t j = 0; j < dependent_token->pos_operations_dependencies->size; j++) {
+                if(dependent_token->pos_operations_dependencies->array_dependencies[j].satisfied) {
                     dependencies_satisfied++;
                 }
             }
-            if(dependencies_satisfied != dependent_token.pos_operations_dependencies->size) {
+            if(dependencies_satisfied != dependent_token->pos_operations_dependencies->size) {
                 fprintf(stderr, "%s", "ERR_TOKEN_POS_OPERATION_DEPENDENCIES_NOT_SATISFIED\n");
                 exit(ERR_TOKEN_POS_OPERATION_DEPENDENCIES_NOT_SATISFIED);
             }
@@ -79,34 +84,34 @@ static inline void validate_token_pos_operation_dependencies(const parser_token_
     }
 }
 
-static inline void validate_token_pre_operation_dependencies(const parser_token_t *const array_generated_tokens, const struct dependent_identifiers *const depentent_identifiers) {
+static inline void validate_token_pre_operation_dependencies(parser_token_t *array_generated_tokens, const struct dependent_identifiers *const depentent_identifiers) {
     for(size_t i = 0; i < depentent_identifiers->size; i++) {
         uint32_t dependent_token_ip = depentent_identifiers->depentent_identifers[i];
-        parser_token_t dependent_token = array_generated_tokens[dependent_token_ip];
+        parser_token_t *dependent_token = &array_generated_tokens[dependent_token_ip];
 
-        if(NULL != dependent_token.pre_operations_dependencies && dependent_token.pre_operations_dependencies->size > 0) {
-            for(size_t j = dependent_token.pre_operations_dependencies->size; j > 0; j--) {
-                int8_t required_dependencie_position = dependent_token.pre_operations_dependencies->array_dependencies[j-1].position_rel_to_token;
+        if(NULL != dependent_token->pre_operations_dependencies && dependent_token->pre_operations_dependencies->size > 0) {
+            for(size_t j = dependent_token->pre_operations_dependencies->size; j > 0; j--) {
+                int8_t required_dependencie_position = dependent_token->pre_operations_dependencies->array_dependencies[j-1].position_rel_to_token;
                 if(required_dependencie_position < 0) {
-                    parser_token_t token = array_generated_tokens[dependent_token_ip+required_dependencie_position];
-                    pre_operation_dependency_rate(array_generated_tokens, j, &dependent_token, &token);
+                    int32_t token_index = dependent_token_ip+required_dependencie_position;
+                    parser_token_t *token = &array_generated_tokens[token_index];
+                    pre_operation_dependency_rate(token_index, j, dependent_token, token);
                 }
                 else {
                     for(size_t k = dependent_token_ip; k > 0; k--) {
-                        parser_token_t token = array_generated_tokens[k-1];
-                        pre_operation_dependency_rate(array_generated_tokens, j, &dependent_token, &token);
+                        parser_token_t *token = &array_generated_tokens[k-1];
+                        pre_operation_dependency_rate(k-1, j, dependent_token, token);
                     }
                 }
             }
-
             size_t dependencies_satisfied = 0;
-            for(size_t j = dependent_token.pre_operations_dependencies->size; j > 0; j--) {
-                if(dependent_token.pre_operations_dependencies->array_dependencies[j-1].satisfied) {
+            for(size_t j = dependent_token->pre_operations_dependencies->size; j > 0; j--) {
+                if(dependent_token->pre_operations_dependencies->array_dependencies[j-1].satisfied) {
                     dependencies_satisfied++;
                 }
             }
 
-            if(dependencies_satisfied != dependent_token.pre_operations_dependencies->size) {
+            if(dependencies_satisfied != dependent_token->pre_operations_dependencies->size) {
                 fprintf(stderr, "%s", "ERR_TOKEN_PRE_OPERATION_DEPENDENCIES_NOT_SATISFIED\n");
                 exit(ERR_TOKEN_PRE_OPERATION_DEPENDENCIES_NOT_SATISFIED);
             }
@@ -140,7 +145,6 @@ struct parser_array_token parser_tokenize(struct lexer_file_identifiers *array_f
             // always generates a positive numbers.
             parser_token_t token = construct_number(identifier, '+');
             generated_tokens[i] = token;
-
             // clean our trash
             discart_number_conversion = NULL;
         }
@@ -153,7 +157,7 @@ struct parser_array_token parser_tokenize(struct lexer_file_identifiers *array_f
     validate_token_pre_type_dependencies(generated_tokens, &dependent_identifiers);
     validate_token_pre_operation_dependencies(generated_tokens, &dependent_identifiers);
     validate_token_pos_operation_dependencies(generated_tokens, &dependent_identifiers, array_file_identifiers->len);
-    
+
     free(dependent_identifiers.depentent_identifers);
 
     // frees file_identfiers
