@@ -2,6 +2,7 @@
 #define SOF_LEXER_STRUCTS_H
 
 #include <stdint.h>
+#include <stddef.h>
 
 /*
  * Struct: lexer_file
