@@ -34,7 +34,7 @@ static parser_token_t construct_number(const char *identifier, const char unary_
     parser_token_t token;
     union parser_data token_data = {0};
 
-    token.params = NULL;
+    token.array_params = NULL;
     token.operation = PARSER_PUSH;
     token.type = unary_operator == '-' ? PARSER_INT64 : PARSER_UINT64;
 
@@ -81,7 +81,7 @@ static parser_token_t construct_operator(const size_t ip, const char *identifier
         token = (parser_token_t) {
             .type = PARSER_INT_LIKE,
             .operation = PARSER_SUB,
-            .pre_op_type_dependencies = array_p_type_deps
+            .array_pre_op_type_dependencies = array_p_type_deps
         };
         break;
     }
@@ -102,7 +102,7 @@ static parser_token_t construct_operator(const size_t ip, const char *identifier
         token = (parser_token_t) {
             .type = PARSER_INT_LIKE,
             .operation = PARSER_SUM,
-            .pre_op_type_dependencies = array_p_type_deps
+            .array_pre_op_type_dependencies = array_p_type_deps
         };
         break;
     }
@@ -118,7 +118,7 @@ static parser_token_t construct_operator(const size_t ip, const char *identifier
         token = (parser_token_t) {
             .type = PARSER_BOOL,
             .operation = PARSER_EQ,
-            .pre_op_type_dependencies = array_p_type_deps
+            .array_pre_op_type_dependencies = array_p_type_deps
         };
         break;
     }
@@ -154,13 +154,13 @@ static parser_token_t construct_symbol(const size_t ip, const char *const identi
 
         parser_token_t token = {
             .data = {0},
-            .params = NULL,
+            .array_params = NULL,
             .type = PARSER_VOID,
             .operation = PARSER_PRINT,
-            .pre_op_type_dependencies = pre_type_deps,
-            .pos_op_type_dependencies = NULL,
-            .pre_operations_dependencies = NULL,
-            .pos_operations_dependencies = NULL
+            .array_pre_op_type_dependencies = pre_type_deps,
+            .array_pos_op_type_dependencies = NULL,
+            .array_pre_operations_dependencies = NULL,
+            .array_pos_operations_dependencies = NULL
         };
         return token;
     }
@@ -184,14 +184,14 @@ static parser_token_t construct_symbol(const size_t ip, const char *const identi
 
         parser_token_t token = {
             .data = {0},
-            .params = NULL,
+            .array_params = NULL,
             .type = PARSER_VOID,
             .operation = PARSER_IF,
-            .pre_op_type_dependencies = pre_type_deps,
-            .pos_op_type_dependencies = NULL,
-            .optional_operations = opt_op_deps,
-            .pre_operations_dependencies = NULL,
-            .pos_operations_dependencies = pos_op_deps,
+            .array_pre_op_type_dependencies = pre_type_deps,
+            .array_pos_op_type_dependencies = NULL,
+            .array_optional_operations = opt_op_deps,
+            .array_pre_operations_dependencies = NULL,
+            .array_pos_operations_dependencies = pos_op_deps,
         };
         return token;
     }
@@ -204,14 +204,14 @@ static parser_token_t construct_symbol(const size_t ip, const char *const identi
 
         parser_token_t token = {
             .data = {0},
-            .params = NULL,
+            .array_params = NULL,
             .type = PARSER_VOID,
             .operation = PARSER_END,
-            .pre_op_type_dependencies = NULL,
-            .pos_op_type_dependencies = NULL,
-            .optional_operations = NULL,
-            .pre_operations_dependencies = pre_op_deps,
-            .pos_operations_dependencies = NULL,
+            .array_pre_op_type_dependencies = NULL,
+            .array_pos_op_type_dependencies = NULL,
+            .array_optional_operations = NULL,
+            .array_pre_operations_dependencies = pre_op_deps,
+            .array_pos_operations_dependencies = NULL,
         };
         return token;
     }
@@ -230,18 +230,18 @@ static parser_token_t construct_symbol(const size_t ip, const char *const identi
  * @return number of dependencies satisfied.
  */
 void pre_type_dependency_rate(const parser_token_t *const array_generated_tokens, const size_t index, const parser_token_t *const dependent_token, const parser_token_t *const token) {
-    switch(dependent_token->pre_op_type_dependencies->array_dependencies[index-1].dependency) {
+    switch(dependent_token->array_pre_op_type_dependencies->array_dependencies[index-1].dependency) {
     case PARSER_INT_LIKE: {
         if((IS_INT_LIKE(token->type) || PRODUCE_INT_LIKE(token->operation)) &&
-           dependent_token->pre_op_type_dependencies->array_dependencies[index-1].satisfied == false) {
-            dependent_token->pre_op_type_dependencies->array_dependencies[index-1].satisfied  = true;
+           dependent_token->array_pre_op_type_dependencies->array_dependencies[index-1].satisfied == false) {
+            dependent_token->array_pre_op_type_dependencies->array_dependencies[index-1].satisfied  = true;
         }
         break;
     }
     default: {
-        if(token->type == dependent_token->pre_op_type_dependencies->array_dependencies[index-1].dependency &&
-           dependent_token->pre_op_type_dependencies->array_dependencies[index-1].satisfied == false) {
-            dependent_token->pre_op_type_dependencies->array_dependencies[index-1].satisfied  = true;
+        if(token->type == dependent_token->array_pre_op_type_dependencies->array_dependencies[index-1].dependency &&
+           dependent_token->array_pre_op_type_dependencies->array_dependencies[index-1].satisfied == false) {
+            dependent_token->array_pre_op_type_dependencies->array_dependencies[index-1].satisfied  = true;
         }
     }
     }
@@ -258,18 +258,18 @@ void pre_type_dependency_rate(const parser_token_t *const array_generated_tokens
  * @return number of dependencies satisfied.
  */
 void pos_type_dependency_rate(const size_t index, parser_token_t *dependent_token, parser_token_t *token) {
-    switch(dependent_token->pos_op_type_dependencies->array_dependencies[index].dependency) {
+    switch(dependent_token->array_pos_op_type_dependencies->array_dependencies[index].dependency) {
     case PARSER_INT_LIKE: {
         if((IS_INT_LIKE(token->type) || PRODUCE_INT_LIKE(token->operation)) &&
-           dependent_token->pos_op_type_dependencies->array_dependencies[index].satisfied == false) {
-            dependent_token->pos_op_type_dependencies->array_dependencies[index].satisfied = true;
+           dependent_token->array_pos_op_type_dependencies->array_dependencies[index].satisfied == false) {
+            dependent_token->array_pos_op_type_dependencies->array_dependencies[index].satisfied = true;
         }
         break;
     }
     default: {
-        if(token->type == dependent_token->pos_op_type_dependencies->array_dependencies[index].dependency &&
-           dependent_token->pos_op_type_dependencies->array_dependencies[index].satisfied == false) {
-            dependent_token->pos_op_type_dependencies->array_dependencies[index].satisfied = true;
+        if(token->type == dependent_token->array_pos_op_type_dependencies->array_dependencies[index].dependency &&
+           dependent_token->array_pos_op_type_dependencies->array_dependencies[index].satisfied == false) {
+            dependent_token->array_pos_op_type_dependencies->array_dependencies[index].satisfied = true;
         }
     }
     }
@@ -286,9 +286,9 @@ void pos_type_dependency_rate(const size_t index, parser_token_t *dependent_toke
  * @return number of dependencies satisfied.
  */
 void pre_operation_dependency_rate(const size_t token_index, const size_t dep_index, parser_token_t *dependent_token, parser_token_t *token) {
-    if(token->operation == dependent_token->pre_operations_dependencies->array_dependencies[dep_index-1].dependency &&
-       dependent_token->pre_operations_dependencies->array_dependencies[dep_index-1].satisfied == false) {
-        dependent_token->pre_operations_dependencies->array_dependencies[dep_index-1].satisfied = true;
+    if(token->operation == dependent_token->array_pre_operations_dependencies->array_dependencies[dep_index-1].dependency &&
+       dependent_token->array_pre_operations_dependencies->array_dependencies[dep_index-1].satisfied == false) {
+        dependent_token->array_pre_operations_dependencies->array_dependencies[dep_index-1].satisfied = true;
     }
 }
 /**
@@ -302,8 +302,8 @@ void pre_operation_dependency_rate(const size_t token_index, const size_t dep_in
  * @return number of dependencies satisfied.
  */
 void pos_operation_dependency_rate(const size_t token_index, const size_t dep_index, parser_token_t *dependent_token, parser_token_t *token) {
-    if(token->operation == dependent_token->pos_operations_dependencies->array_dependencies[dep_index].dependency &&
-       dependent_token->pos_operations_dependencies->array_dependencies[dep_index].satisfied == false) {
-        dependent_token->pos_operations_dependencies->array_dependencies[dep_index].satisfied = true;
+    if(token->operation == dependent_token->array_pos_operations_dependencies->array_dependencies[dep_index].dependency &&
+       dependent_token->array_pos_operations_dependencies->array_dependencies[dep_index].satisfied == false) {
+        dependent_token->array_pos_operations_dependencies->array_dependencies[dep_index].satisfied = true;
     }
 }
