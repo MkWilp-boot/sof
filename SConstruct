@@ -1,33 +1,53 @@
+import platform
+
 env = Environment()
+env['CC'] = 'gcc'
+env['LINK'] = 'gcc'
+
+CF = ['-std=c17', '-Wall', '-pedantic']
+target = 'sof'
 
 Help("\nSOF bootstrap, type 'scons'\n")
 
-CF = ['-std=c17', '-Wall', '-pedantic']
+operating_system = f'{env["PLATFORM"]}_{platform.architecture()[0]}'
+
+platform_specifics = {
+    'win32_32bit': {
+        'files': ['compiler\\windows\\win32\\win32.c'],
+        'target_extension': '.exe',
+        'cflags': ['-D W32']
+    },
+    'win32_64bit': {
+        'files': ['compiler\\windows\\win64\\win64.c'],
+        'target_extension': '.exe',
+        'cflags': ['-D W64']
+    },
+    'posix_32bit': {
+        'files': ['compiler/linux/linux.c'],
+        'target_extension': '.run',
+        'cflags': ['-D L32']
+    },
+    'posix_64bit': {
+        'files': ['compiler/linux/linux.c'],
+        'target_extension': '.run',
+        'cflags': ['-D L64']
+    }
+}
 
 print('[INFO] Scanning source files')
-
-target = 'sof'
-
 source_files = []
 source_files += Glob('*.c')
 source_files += Glob('*/*.c')
 
-print('[INFO] Checking platform..')
-
-platform = env['PLATFORM']
-if platform == 'win64':
-    source_files += ['compiler/windows/win64/win64.c']
-    target += '.exe'
-    CF += ['-D W64']
-elif platform == 'posix':
-    source_files += ['compiler/linux/linux.c']
-    target += '.run'
-    CF += ['-D L64']
-else:
+print('[INFO] Setting platform specifics')
+try:
+    print(f'[INFO] Platform detected as "{operating_system}"')
+    source_files += platform_specifics[operating_system]['files']
+    target += platform_specifics[operating_system]['target_extension']
+    CF += platform_specifics[operating_system]['cflags']
+except KeyError:
     print('[ERROR] Invalid platform for build')
     exit(1)
-
-print(f'[INFO] Platform detected as "{platform}"')
 
 print('[INFO] Building object files')
 for file in source_files:
@@ -40,7 +60,4 @@ for file in source_files:
 object_files = Glob('objects/*.o')
 
 print('[INFO] Linking object files')
-if platform == 'win64':
-    Program(target, object_files)
-else:
-    Program(target, object_files)
+Program(target, object_files)
