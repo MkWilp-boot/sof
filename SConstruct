@@ -41,7 +41,7 @@ source_files += Glob('*/*.c')
 
 print('[INFO] Setting platform specifics')
 try:
-    print(f'[INFO] Platform detected as "{operating_system}"')
+    print(f'[OK] Platform detected as "{operating_system}"')
     source_files += platform_specifics[operating_system]['files']
     target += platform_specifics[operating_system]['target_extension']
     CF += platform_specifics[operating_system]['cflags']
@@ -52,7 +52,7 @@ except KeyError:
 print('[INFO] Building object files')
 for file in source_files:
     full_file_name = str(file)
-    print(f'[INFO] Building: "{full_file_name}"')
+    print(f'[OK] Building: "{full_file_name}"')
 
     file_name = full_file_name.split('/')[-1].split('.')[0]
     Object(f'objects/{file_name}', file, CCFLAGS=CF)
@@ -61,3 +61,5 @@ object_files = Glob('objects/*.o')
 
 print('[INFO] Linking object files')
 Program(target, object_files)
+
+print('[OK] Linking complete')
