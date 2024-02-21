@@ -1,65 +1,85 @@
-import platform
+import os
 
-env = Environment()
-env['CC'] = 'gcc'
-env['LINK'] = 'gcc'
+from platform import architecture
+from SCons.Environment import Environment
 
-CF = ['-std=c17', '-Wall', '-pedantic']
-target = 'sof'
+def windows_build_env(flags) -> Environment:
+    env = Environment(tools = ['mingw'], ENV = {'PATH' : os.environ['PATH']})
+    tmp_dir = os.path.join(os.getcwd(), ".scons-tmp")
+    if not os.path.exists(tmp_dir):
+        os.makedirs(tmp_dir)
+    env['ENV']['TMP'] = tmp_dir
+    env['ENV']['TEMP'] = tmp_dir
+    return env
 
-Help("\nSOF bootstrap, type 'scons'\n")
+def linux_build_env(flags) -> Environment:
+    env = Environment(CC = 'gcc', LINK = 'gcc', CCFLAGS=flags)
+    return env
 
-operating_system = f'{env["PLATFORM"]}_{platform.architecture()[0]}'
+env = None
+target = None
+platform = Environment()["PLATFORM"]
+
+CFlags = ['-std=c17', '-Wall', '-pedantic']
 
 platform_specifics = {
-    'win32_32bit': {
-        'files': ['compiler\\windows\\win32\\win32.c'],
-        'target_extension': '.exe',
-        'cflags': ['-D W32']
+    'win32': {
+        '32bit': {
+            'files': ['compiler\\windows\\win32\\win32.c'],
+            'cflags': ['-D W32'],
+        },
+        '64bit': {
+            'files': ['compiler\\windows\\win64\\win64.c'],
+            'cflags': ['-D W64'],
+        },
+        'target': 'sof.exe',
+        'dir_sep': '\\',
+        'env': windows_build_env,
     },
-    'win32_64bit': {
-        'files': ['compiler\\windows\\win64\\win64.c'],
-        'target_extension': '.exe',
-        'cflags': ['-D W64']
-    },
-    'posix_32bit': {
-        'files': ['compiler/linux/linux.c'],
-        'target_extension': '.run',
-        'cflags': ['-D L32']
-    },
-    'posix_64bit': {
-        'files': ['compiler/linux/linux.c'],
-        'target_extension': '.run',
-        'cflags': ['-D L64']
+    'posix': {
+        '32bit': {
+            'files': ['compiler/linux/linux.c'],
+            'cflags': ['-D L32'],
+        },
+        '64bit': {
+            'files': ['compiler/linux/linux.c'],
+            'cflags': ['-D L64'],
+        },
+        'target': 'sof.run',
+        'dir_sep': '/',
+        'env': linux_build_env
     }
 }
-
-print('[INFO] Scanning source files')
 source_files = []
-source_files += Glob('*.c')
-source_files += Glob('*/*.c')
 
 print('[INFO] Setting platform specifics')
 try:
-    print(f'[OK] Platform detected as "{operating_system}"')
-    source_files += platform_specifics[operating_system]['files']
-    target += platform_specifics[operating_system]['target_extension']
-    CF += platform_specifics[operating_system]['cflags']
+    (system_arch, _) = architecture()
+    print(f'[OK] Platform detected as: "{platform}"-"{system_arch}"')
+    source_files    += platform_specifics[platform][system_arch]['files']
+    CFlags          += platform_specifics[platform][system_arch]['cflags']
+    target           = platform_specifics[platform]['target']
+    env              = platform_specifics[platform]['env'](CFlags)
 except KeyError:
     print('[ERROR] Invalid platform for build')
     exit(1)
 
+print('[INFO] Scanning source files')
+source_files += env.Glob('*.c')
+source_files += env.Glob('*/*.c')
+
+dir_sep = platform_specifics[platform]['dir_sep']
+
 print('[INFO] Building object files')
+
 for file in source_files:
     full_file_name = str(file)
     print(f'[OK] Building: "{full_file_name}"')
 
-    file_name = full_file_name.split('/')[-1].split('.')[0]
-    Object(f'objects/{file_name}', file, CCFLAGS=CF)
+    file_name = full_file_name.split(dir_sep)[-1].split('.')[0]
+    env.Object(f'./objects/{file_name}', file)
 
-object_files = Glob('objects/*.o')
+object_files = env.Glob('./objects/*')
 
 print('[INFO] Linking object files')
-Program(target, object_files)
-
-print('[OK] Linking complete')
+env.Program(target, object_files)
