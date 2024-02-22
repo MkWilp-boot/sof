@@ -167,7 +167,7 @@ struct parser_array_token parser_tokenize(struct lexer_file_identifiers *array_f
     exit(0);
 
     struct parser_array_token parser_tokens = {
-        .array = NULL,//generated_tokens,
+        .array = generated_tokens,
         .size = array_file_identifiers->len
     };
     return parser_tokens;

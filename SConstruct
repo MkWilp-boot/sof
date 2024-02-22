@@ -4,7 +4,7 @@ from platform import architecture
 from SCons.Environment import Environment
 
 def windows_build_env(flags) -> Environment:
-    env = Environment(tools = ['mingw'], ENV = {'PATH' : os.environ['PATH']})
+    env = Environment(tools = ['mingw'], ENV = {'PATH' : os.environ['PATH']}, CCFLAGS=flags)
     tmp_dir = os.path.join(os.getcwd(), ".scons-tmp")
     if not os.path.exists(tmp_dir):
         os.makedirs(tmp_dir)
