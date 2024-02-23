@@ -9,3 +9,4 @@ sof
 .vscode/*
 .DS_DATA
 .sconsign.dblite
+.scons-tmp

@@ -20,7 +20,7 @@ env = None
 target = None
 platform = Environment()["PLATFORM"]
 
-CFlags = ['-std=c17', '-Wall', '-pedantic']
+CFlags = ['-std=c17', '-Wall', '-pedantic', '-fms-extensions']
 
 platform_specifics = {
     'win32': {
@@ -52,10 +52,8 @@ platform_specifics = {
 }
 source_files = []
 
-print('[INFO] Setting platform specifics')
 try:
     (system_arch, _) = architecture()
-    print(f'[OK] Platform detected as: "{platform}"-"{system_arch}"')
     source_files    += platform_specifics[platform][system_arch]['files']
     CFlags          += platform_specifics[platform][system_arch]['cflags']
     target           = platform_specifics[platform]['target']
@@ -64,22 +62,16 @@ except KeyError:
     print('[ERROR] Invalid platform for build')
     exit(1)
 
-print('[INFO] Scanning source files')
 source_files += env.Glob('*.c')
 source_files += env.Glob('*/*.c')
+source_files += env.Glob('./pkg/*/*/*.c')
 
 dir_sep = platform_specifics[platform]['dir_sep']
 
-print('[INFO] Building object files')
-
 for file in source_files:
     full_file_name = str(file)
-    print(f'[OK] Building: "{full_file_name}"')
-
     file_name = full_file_name.split(dir_sep)[-1].split('.')[0]
     env.Object(f'./objects/{file_name}', file)
 
 object_files = env.Glob('./objects/*')
-
-print('[INFO] Linking object files')
 env.Program(target, object_files)
