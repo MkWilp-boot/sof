@@ -15,15 +15,4 @@ struct lexer_file {
     char *content;
 };
 
-/*
- * Struct: lexer_file_identifiers
- * ----------------------------
- * Holds all identifiers of a file, it's size and a possible error
- */
-struct lexer_file_identifiers {
-    char **identifiers;
-    size_t len;
-    size_t cap;
-};
-
 #endif  // SOF_LEXER_STRUCTS_H

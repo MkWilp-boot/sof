@@ -3,10 +3,11 @@
 
 #include "../../parser/structs.h"
 #include "../../pkg/error_codes.h"
+#include "../../pkg/collections/vector/vector.h"
 
 #include "linux.h"
 
-void compile_linux(struct parser_array_token parser_tokens) {
+void compile_linux(vector_t parser_tokens) {
     FILE *file = fopen(ASM_OUT_DIR, "w");
 
     fprintf(file, "BITS 64\n\n");
@@ -106,13 +107,13 @@ void compile_linux(struct parser_array_token parser_tokens) {
     fprintf(file, "%s", "    ret\n\n");
 
     fprintf(file, "_start:\n");
-    for(size_t ip = 0; ip < parser_tokens.size; ++ip) {
-        const parser_token_t token = parser_tokens.array[ip];
+    for(size_t ip = 0; ip < parser_tokens.len; ++ip) {
+        const parser_token_t *token = vec_get(&parser_tokens, ip);
         
-        switch(token.operation) {
+        switch(token->operation) {
         case PARSER_PUSH: {
             char* command = malloc(sizeof(char)*20);
-            sprintf(command, "push    %ld\n", token.data.u64_value);
+            sprintf(command, "push    %ld\n", token->data.u64_value);
             fprintf(file, "    %s", command);
             free(command);
             break;
@@ -147,7 +148,7 @@ void compile_linux(struct parser_array_token parser_tokens) {
             break;
         }
         default:
-            fprintf(stderr, "Unknow operation '%d'\n", token.operation);
+            fprintf(stderr, "Unknow operation '%d'\n", token->operation);
             exit(ERR_UNKNOW_OPERATION);
         }
     }

@@ -4,21 +4,22 @@
 #include "win64.h"
 
 #include "../../../pkg/error_codes.h"
+#include "../../../pkg/collections/vector/vector.h"
 #include "../../../parser/structs.h"
 
-void compile_win64(struct parser_array_token parser_tokens) {
+void compile_win64(vector_t parser_tokens) {
     FILE *file = fopen(ASM_OUT_DIR, "w");
 
     fprintf(file, "%s", "include C:\\masm64\\include64\\masm64rt.inc\n");
     fprintf(file, "%s", ".CODE\n");
     fprintf(file, "%s", "main proc\n");
-    for(size_t ip = 0; ip < parser_tokens.size; ++ip) {
-        const parser_token_t token = parser_tokens.array[ip];
+    for(size_t ip = 0; ip < parser_tokens.len; ++ip) {
+        const parser_token_t *token = vec_get(&parser_tokens, ip);
         
-        switch(token.operation) {
+        switch(token->operation) {
         case PARSER_PUSH: {
             char* command = malloc(sizeof(char)*20);
-            sprintf(command, "push      %lld\n", token.data.u64_value);
+            sprintf(command, "push      %lld\n", token->data.u64_value);
             fprintf(file, "     %s", command);
             free(command);
             break;
@@ -53,7 +54,7 @@ void compile_win64(struct parser_array_token parser_tokens) {
             break;
         }
         default:
-            fprintf(stderr, "Unknow operation '%d'\n", token.operation);
+            fprintf(stderr, "Unknow operation '%d'\n", token->operation);
             exit(ERR_UNKNOW_OPERATION);
         }
     }

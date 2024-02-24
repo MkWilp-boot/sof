@@ -2,6 +2,8 @@
 #define SOF_PARSER_H
 
 #include "../lexer/structs.h"
+#include "../pkg/collections/vector/vector.h"
+
 #include "structs.h"
 
 #define IS_OPERATOR(op) \
@@ -29,11 +31,11 @@
 /**
  * @brief creates tokens based on a input file.
  *
- * @attention This function frees the parameter file_identifiers
+ * @attention This function frees the parameter array_file_identifiers
  * 
- * @param file_identifiers File processed by the lexer.
+ * @param array_file_identifiers File processed by the lexer.
  * @return array of parser_token.
  */
-struct parser_array_token parser_tokenize(struct lexer_file_identifiers *array_file_identifiers);
+vector_t parser_tokenize(vector_t *array_file_identifiers);
 
 #endif // SOF_PARSER_H

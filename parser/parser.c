@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+#include "../pkg/collections/vector/vector.h"
+
 #include "../lexer/structs.h"
 #include "../lexer/lexer.h"
 
@@ -119,8 +121,8 @@ static inline void validate_token_pre_operation_dependencies(parser_token_t *arr
     }
 }
 
-struct parser_array_token parser_tokenize(struct lexer_file_identifiers *array_file_identifiers) {
-    parser_token_t *generated_tokens = calloc(array_file_identifiers->len, sizeof(parser_token_t));
+vector_t parser_tokenize(vector_t *array_file_identifiers) {
+    vector_t generated_tokens = vec_new(sizeof(parser_token_t));
 
     uint32_t *depentent_identifers_ptr = calloc(DEPENDENT_IDENTIFIERS_SIZE, sizeof(uint32_t));
     struct dependent_identifiers dependent_identifiers = {
@@ -130,33 +132,33 @@ struct parser_array_token parser_tokenize(struct lexer_file_identifiers *array_f
 
     char *discart_number_conversion;
     for(size_t i = 0; i < array_file_identifiers->len; ++i) {
-        const char *const identifier = array_file_identifiers->identifiers[i];
+        const char *const identifier = vec_get(array_file_identifiers, i);
         if(IS_UNARY_OPERATION(identifier[0], identifier[1])) {
             // identifier[0] is the sign of the identifier.
             parser_token_t token = construct_number(identifier, identifier[0]);
-            generated_tokens[i] = token;
+            vec_add(&generated_tokens, &token);
         }
         // single operators
         else if(IS_OPERATOR(identifier[0])) {
             parser_token_t token = construct_operator(i, identifier, &dependent_identifiers);
-            generated_tokens[i] = token;
+            vec_add(&generated_tokens, &token);
         }
         else if(0 <= strtol(identifier, &discart_number_conversion, 10) && *discart_number_conversion == '\0') {
             // always generates a positive numbers.
             parser_token_t token = construct_number(identifier, '+');
-            generated_tokens[i] = token;
+            vec_add(&generated_tokens, &token);
             // clean our trash
             discart_number_conversion = NULL;
         }
         else {
             parser_token_t token = construct_symbol(i, identifier, &dependent_identifiers);
-            generated_tokens[i] = token;
+            vec_add(&generated_tokens, &token);
         }
     }
 
-    validate_token_pre_type_dependencies(generated_tokens, &dependent_identifiers);
-    validate_token_pre_operation_dependencies(generated_tokens, &dependent_identifiers);
-    validate_token_pos_operation_dependencies(generated_tokens, &dependent_identifiers, array_file_identifiers->len);
+    // validate_token_pre_type_dependencies(generated_tokens, &dependent_identifiers);
+    // validate_token_pre_operation_dependencies(generated_tokens, &dependent_identifiers);
+    // validate_token_pos_operation_dependencies(generated_tokens, &dependent_identifiers, array_file_identifiers->len);
 
     free(dependent_identifiers.depentent_identifers);
 
@@ -164,11 +166,6 @@ struct parser_array_token parser_tokenize(struct lexer_file_identifiers *array_f
     lexer_free_identifiers(array_file_identifiers);
 
     // still working
-    exit(0);
 
-    struct parser_array_token parser_tokens = {
-        .array = generated_tokens,
-        .size = array_file_identifiers->len
-    };
-    return parser_tokens;
+    return generated_tokens;
 }

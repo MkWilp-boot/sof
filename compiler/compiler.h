@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include "../pkg/error_codes.h"
+#include "../pkg/collections/vector/vector.h"
 #include "../parser/structs.h"
 
 /**
@@ -11,5 +12,5 @@
  *
  * @param parser_tokens tokens to be processed.
  */
-void compile(struct parser_array_token parser_tokens);
+void compile(vector_t parser_tokens);
 #endif // COMPILER_H

@@ -2,6 +2,7 @@
 #define COMPILER_WIN64_H
 
 #include "../../common.h"
+#include "../../../pkg/collections/vector/vector.h"
 #include "../../../parser/structs.h"
 
 #define MASM_CMD "ml64.exe ./asm/"ASM_FILE_NAME".asm /Fo ./objects"ASM_FILE_NAME".o  /Fe ./bin/"ASM_FILE_NAME".exe /nologo /W3 /link /entry:main"
@@ -12,6 +13,6 @@
  *
  * @param parser_tokens tokens to be processed.
  */
-void compile_win64(struct parser_array_token parser_tokens);
+void compile_win64(vector_t parser_tokens);
 
 #endif // COMPILER_WIN64_H

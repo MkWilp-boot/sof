@@ -7,21 +7,23 @@
 
 #include "../parser/structs.h"
 
+#include "../pkg/collections/vector/vector.h"
+
 #if defined(W64)
 
 #include "windows/win64/win64.h"
-void compile(struct parser_array_token parser_tokens) {
+void compile(vector_t parser_tokens) {
     compile_win64(parser_tokens);
 }
 
 #elif defined(L64)
 
 #include "linux/linux.h"
-void compile(struct parser_array_token parser_tokens) {
+void compile(vector_t parser_tokens) {
     compile_linux(parser_tokens);
 }
 #else
-void compile(struct parser_array_token parser_tokens) {
+void compile(vector_t parser_tokens) {
     assert(0 && "Undefined compiler option");
 }
 #endif

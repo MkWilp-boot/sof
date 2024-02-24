@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "../pkg/error_codes.h"
+#include "../pkg/collections/vector/vector.h"
 
 #include "lexer.h"
 #include "structs.h"
@@ -58,48 +59,33 @@ struct lexer_file lexer_read(const char *const file_name) {
     return c_file;
 }
 
-struct lexer_file_identifiers lexer_build_identifiers(struct lexer_file file) {
+vector_t lexer_build_identifiers(struct lexer_file file) {
+    vector_t vec = vec_new(sizeof(char*));
     char *fcontent = malloc(strlen(file.content)*sizeof(char)+1);
     strcpy(fcontent, file.content);
-
-    struct lexer_file_identifiers array_tokens = {
-        .cap = 1,
-        .len = 0,
-        .identifiers = malloc(1*sizeof(char*))
-    };
+    
     char *tmp_token = strtok(fcontent, split_file_delimiters);
     while (tmp_token != NULL) {
         size_t token_str_size = (strlen(tmp_token)*sizeof(char))+1;
         char *token_copy = malloc(token_str_size);
         strcpy(token_copy, tmp_token);
         
-        token_copy[token_str_size-1] = '\0';
-        if(array_tokens.len >= array_tokens.cap) {
-            array_tokens.cap *= 2;
-            array_tokens.identifiers = realloc(array_tokens.identifiers, array_tokens.cap*sizeof(char*));
-        }
-        array_tokens.identifiers[array_tokens.len++] = token_copy;
+        vec_add(&vec, token_copy);
         tmp_token = strtok(NULL, split_file_delimiters);
     }
 
     free(file.content);
     file.content = NULL;
-    return array_tokens;
+    return vec;
 }
 
-void inline lexer_free_identifiers(struct lexer_file_identifiers *identifiers) {
+void inline lexer_free_identifiers(vector_t *identifiers) {
     if(NULL == identifiers) {
         return;
     }
-    for(size_t i = 0; i < identifiers->len; i++) {
-        if(NULL != identifiers->identifiers[i]) {
-            free(identifiers->identifiers[i]);
-            identifiers->identifiers[i] = NULL;
-        }
-    }
-    if(NULL != identifiers->identifiers) {
-        free(identifiers->identifiers);
-        identifiers->identifiers = NULL;
+    if(NULL != identifiers->ptr) {
+        free(identifiers->ptr);
+        identifiers->ptr = NULL;
     }
     identifiers = NULL;
 }

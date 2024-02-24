@@ -86,9 +86,4 @@ typedef struct parser_token {
     struct parser_token_operation_dependency *array_pos_operations_dependencies;
 } parser_token_t;
 
-struct parser_array_token {
-    size_t size;
-    parser_token_t* array;
-};
-
 #endif // SOF_PARSER_STRUCTS_H

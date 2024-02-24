@@ -1,7 +1,7 @@
 #ifndef SOF_ARRAY_H
 #define SOF_ARRAY_H
 
-#define MINIMAL_CAP 2
+#define MINIMAL_CAP 64
 
 #include <stddef.h>
 
