@@ -1,5 +1,3 @@
-#include <stdio.h>
-
 #include "pkg/error_codes.h"
 #include "pkg/collections/vector/vector.h"
 

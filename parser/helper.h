@@ -6,6 +6,7 @@
 #include <ctype.h>
 #include <stdbool.h>
 
+#include "../pkg/collections/vector/vector.h"
 #include "../lexer/structs.h"
 #include "../lexer/lexer.h"
 
@@ -229,7 +230,7 @@ static parser_token_t construct_symbol(const size_t ip, const char *const identi
  * 
  * @return number of dependencies satisfied.
  */
-void pre_type_dependency_rate(const parser_token_t *const array_generated_tokens, const size_t index, const parser_token_t *const dependent_token, const parser_token_t *const token) {
+void pre_type_dependency_rate(vector_t *array_generated_tokens, const size_t index, parser_token_t *dependent_token, parser_token_t *token) {
     switch(dependent_token->array_pre_op_type_dependencies->array_dependencies[index-1].dependency) {
     case PARSER_INT_LIKE: {
         if((IS_INT_LIKE(token->type) || PRODUCE_INT_LIKE(token->operation)) &&
