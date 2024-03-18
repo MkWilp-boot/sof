@@ -9,6 +9,13 @@ void vec_grow(vector_t *vec) {
     vec->ptr = realloc(vec->ptr, vec->elements_size * vec->cap);
 }
 
+void vec_free(vector_t *vec) {
+    if(NULL != vec && NULL != vec->ptr) {
+        free(vec->ptr);
+    }
+    vec = NULL;
+}
+
 void *vec_get(vector_t *vec, size_t index) {
     return (vec->ptr + (index * vec->elements_size));
 }

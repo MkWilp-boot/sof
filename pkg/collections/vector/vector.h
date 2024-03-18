@@ -14,6 +14,8 @@ vector_t vec_new(size_t elements_size);
 
 void vec_grow(vector_t *vec);
 
+void vec_free(vector_t *vec);
+
 void vec_add(vector_t *vec, void *element);
 
 void *vec_get(vector_t *vec, size_t index);
