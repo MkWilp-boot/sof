@@ -28,6 +28,9 @@
 #define PRODUCE_BOOL(t) \
     t == PARSER_EQ
 
+#define CAN_LINK_TO_END(t) \
+    (t->token->operation == PARSER_IF)
+
 /**
  * @brief creates tokens based on a input file.
  *

@@ -5,6 +5,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include "../pkg/collections/vector/vector.h"
+
 /**
  * @brief Enumeration of SOF instructions.
  */
@@ -76,6 +78,8 @@ typedef struct parser_token {
 
     union parser_data data;
     union parser_data *array_params;
+
+    vector_t linked_token;
 
     struct parser_token_type_dependency *array_pre_op_type_dependencies;
     struct parser_token_type_dependency *array_pos_op_type_dependencies;

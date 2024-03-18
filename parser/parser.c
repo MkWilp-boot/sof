@@ -121,6 +121,52 @@ static inline void validate_token_pre_operation_dependencies(vector_t *array_gen
     }
 }
 
+/**
+ * @brief link tokens accross the `array_tokens` argument
+ *
+ * @attention This function modifies `array_tokens`
+ * 
+ * @param array_tokens Every token generated
+ */
+static inline void cross_reference_tokens(vector_t *array_tokens) {
+    struct rel_token_index {
+        parser_token_t *token;
+        size_t index;
+        bool used;
+    };
+
+    vector_t relation_tokens = vec_new(sizeof(struct rel_token_index));
+    for(size_t i = 0; i < array_tokens->len; i++) {
+        parser_token_t *token = vec_get(array_tokens, i);
+        switch(token->operation) {
+        case PARSER_IF: {
+                struct rel_token_index relational_token = {
+                    .index = i,
+                    .token = token,
+                    .used = false
+                };
+                vec_add(&relation_tokens, &relational_token);
+                break;
+            }
+        case PARSER_END: {
+            uint32_t offset = 1;
+            struct rel_token_index *passed_token = vec_get(&relation_tokens, relation_tokens.len-offset);
+            for(; passed_token->used; offset++) {
+                passed_token = vec_get(&relation_tokens, relation_tokens.len-offset);
+            }
+            if(!CAN_LINK_TO_END(passed_token)) {
+                fprintf(stderr, "Cannot link '%d' to PARSER_END\n", passed_token->token->operation);
+                exit(ERR_CANNOT_LINK_TOKEN_BY_OP);
+            }
+            vec_add(&passed_token->token->linked_token, token);
+            passed_token->used = true;
+        }
+        default:
+            break;
+        }
+    }
+}
+
 vector_t parser_tokenize(vector_t *array_file_identifiers) {
     vector_t generated_tokens = vec_new(sizeof(parser_token_t));
 
@@ -159,6 +205,8 @@ vector_t parser_tokenize(vector_t *array_file_identifiers) {
     validate_token_pre_type_dependencies(&generated_tokens, &dependent_identifiers);
     validate_token_pre_operation_dependencies(&generated_tokens, &dependent_identifiers);
     validate_token_pos_operation_dependencies(&generated_tokens, &dependent_identifiers, array_file_identifiers->len);
+
+    cross_reference_tokens(&generated_tokens);
 
     free(dependent_identifiers.depentent_identifers);
 

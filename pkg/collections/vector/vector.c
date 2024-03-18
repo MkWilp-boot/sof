@@ -10,7 +10,7 @@ void vec_grow(vector_t *vec) {
 }
 
 void *vec_get(vector_t *vec, size_t index) {
-    return (vec->ptr + index * vec->elements_size);
+    return (vec->ptr + (index * vec->elements_size));
 }
 
 void vec_add(vector_t *vec, void *element) {
