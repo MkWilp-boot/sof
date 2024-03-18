@@ -158,6 +158,9 @@ static inline void cross_reference_tokens(vector_t *array_tokens) {
                 fprintf(stderr, "Cannot link '%d' to PARSER_END\n", passed_token->token->operation);
                 exit(ERR_CANNOT_LINK_TOKEN_BY_OP);
             }
+            if(0 == passed_token->token->linked_token.elements_size) {
+                passed_token->token->linked_token = vec_new(sizeof(parser_token_t));
+            }
             vec_add(&passed_token->token->linked_token, token);
             passed_token->used = true;
         }
@@ -207,7 +210,7 @@ vector_t parser_tokenize(vector_t *array_file_identifiers) {
     validate_token_pos_operation_dependencies(&generated_tokens, &dependent_identifiers, array_file_identifiers->len);
 
     cross_reference_tokens(&generated_tokens);
-
+    
     free(dependent_identifiers.depentent_identifers);
 
     // frees file_identfiers
