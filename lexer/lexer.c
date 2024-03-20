@@ -37,9 +37,10 @@ struct lexer_file lexer_read(const char *const file_name) {
 
     rewind(source_file);
 
-    char *const source_content = malloc(file_bytes_amount);
+    char *const source_content = malloc(file_bytes_amount+1);
     size_t file_bytes_read = fread(source_content, 1, file_bytes_amount, source_file);
     source_content[file_bytes_amount] = '\0';
+
     fclose(source_file);
 
     if(file_bytes_read != file_bytes_amount) {
