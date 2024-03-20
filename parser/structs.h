@@ -81,6 +81,8 @@ typedef struct parser_token {
 
     vector_t linked_token;
 
+    size_t position;
+
     struct parser_token_type_dependency *array_pre_op_type_dependencies;
     struct parser_token_type_dependency *array_pos_op_type_dependencies;
 

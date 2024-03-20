@@ -185,22 +185,26 @@ vector_t parser_tokenize(vector_t *array_file_identifiers) {
         if(IS_UNARY_OPERATION(identifier[0], identifier[1])) {
             // identifier[0] is the sign of the identifier.
             parser_token_t token = construct_number(identifier, identifier[0]);
+            token.position = i;
             vec_add(&generated_tokens, &token);
         }
         // single operators
         else if(IS_OPERATOR(identifier[0])) {
             parser_token_t token = construct_operator(i, identifier, &dependent_identifiers);
+            token.position = i;
             vec_add(&generated_tokens, &token);
         }
         else if(0 <= strtol(identifier, &discart_number_conversion, 10) && *discart_number_conversion == '\0') {
             // always generates a positive numbers.
             parser_token_t token = construct_number(identifier, '+');
+            token.position = i;
             vec_add(&generated_tokens, &token);
             // clean our trash
             discart_number_conversion = NULL;
         }
         else {
             parser_token_t token = construct_symbol(i, identifier, &dependent_identifiers);
+            token.position = i;
             vec_add(&generated_tokens, &token);
         }
     }
@@ -215,7 +219,7 @@ vector_t parser_tokenize(vector_t *array_file_identifiers) {
 
     // frees file_identfiers
     lexer_free_identifiers(array_file_identifiers);
-    exit(0);
+    //exit(0);
     // still working
 
     return generated_tokens;

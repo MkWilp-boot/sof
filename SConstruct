@@ -62,6 +62,10 @@ except KeyError:
     print('[ERROR] Invalid platform for build')
     exit(1)
 
+objects_to_remove = [str(f) for f in env.Glob('objects/*.o')]
+for f in objects_to_remove:
+    os.remove(f)
+
 source_files += env.Glob('*.c')
 source_files += env.Glob('*/*.c')
 source_files += env.Glob('./pkg/*/*/*.c')
