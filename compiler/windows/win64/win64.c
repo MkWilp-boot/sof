@@ -14,12 +14,12 @@ void compile_win64(vector_t parser_tokens) {
     fprintf(file, "%s", ".CODE\n");
     fprintf(file, "%s", "main proc\n");
     for(size_t ip = 0; ip < parser_tokens.len; ++ip) {
-        const parser_token_t *token = vec_get(&parser_tokens, ip);
+        parser_token_t *token = vec_get(&parser_tokens, ip);
         
         switch(token->operation) {
         case PARSER_PUSH: {
             char* command = malloc(sizeof(char)*20);
-            sprintf(command, "push      %lld\n", token->data.u64_value);
+            sprintf(command, "push    %lld\n", token->data.u64_value);
             fprintf(file, "     %s", command);
             free(command);
             break;
@@ -51,6 +51,24 @@ void compile_win64(vector_t parser_tokens) {
         case PARSER_PRINT: {
             fprintf(file, "     pop     rcx\n");
             fprintf(file, "     conout str$(rcx)\n");
+            break;
+        }
+        case PARSER_IF: {
+            parser_token_t *end_token = vec_get(&token->linked_token, 0);
+            for (size_t i = 1; PARSER_END != end_token->operation; i++) {
+                end_token = vec_get(&token->linked_token, i);
+            }
+            if(PARSER_END != end_token->operation) {
+                exit(ERR_CANNOT_USE_NON_END_STATEMENT_FOR_IF_BLOCKS);
+            }
+            
+            fprintf(file, "     pop     rax\n");
+            fprintf(file, "     test    rax, rax\n");
+            fprintf(file, "     jz      .L%lld\n", end_token->position);
+            break;
+        }
+        case PARSER_END: {
+            fprintf(file, ".L%lld:\n", token->position);
             break;
         }
         default:
